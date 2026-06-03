@@ -82,7 +82,7 @@
   .log-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
   .log-row:last-child{border-bottom:none;}
   .dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
-  .dot-out{background:#BA7517;}.dot-in{background:#1D9E75;}.dot-res{background:#185FA5;}
+  .dot-out{background:#BA7517;}.dot-in{background:#1D9E75;}.dot-res{background:#185FA5;}.dot-signin{background:#7C3AED;}
   .log-meta{font-size:11px;color:var(--text3);margin-top:2px;}
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center;overflow-y:auto;padding:2rem 1rem;}
   .overlay.open{display:flex;}
@@ -121,7 +121,7 @@
 
 <script>
   // ── CONFIG ──
-  const SUPABASE_URL      = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
+   const SUPABASE_URL      = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
   const DEFAULT_PIN       = '0000';  // Every new user starts with this PIN
   const ADMIN_BOOTSTRAP_PIN = '9999'; // One-time PIN to create the first admin account
@@ -151,6 +151,7 @@
     <button class="tab" id="tab-manage"   onclick="sw('manage')">Manage</button>
     <button class="tab" id="tab-users"    onclick="sw('users')">Users</button>
     <button class="tab" id="tab-log"      onclick="sw('log')">Log</button>
+    <button class="tab" id="tab-signin"   onclick="sw('signin')">Sign-in Log</button>
   </div>
 
   <!-- BROWSE -->
@@ -300,6 +301,12 @@
   <div id="sec-log" class="sec">
     <div class="topbar"><input type="text" id="log-srch" placeholder="Filter log…" oninput="renderLog()"></div>
     <div class="panel" id="log-panel"></div>
+  </div>
+
+  <!-- SIGN-IN LOG -->
+  <div id="sec-signin" class="sec">
+    <div class="topbar"><input type="text" id="signin-srch" placeholder="Filter by name…" oninput="renderSigninLog()"></div>
+    <div class="panel" id="signin-panel"></div>
   </div>
 </div>
 
@@ -501,6 +508,8 @@ async function submitLogin() {
   if (user.pin !== pin) { errEl.textContent = 'Incorrect PIN.'; return; }
   session = { id: user.id, name: user.name, role: user.role };
   localStorage.setItem('sc_session', JSON.stringify(session));
+  // Log sign-in to activity_log
+  if (sb) sb.from('activity_log').insert({ type:'signin', item_id:null, item_name:null, qty:null, person:user.name, note:roleLabel(user.role) });
   closeLogin();
   updateNav();
   refreshTabAccess();
@@ -553,13 +562,16 @@ function updateNav() {
 
 function refreshTabAccess() {
   const u = isLoggedIn(), a = isAdmin(), staff = isAnyStaff();
+  const isSuperAdmin = session.name === SUPER_ADMIN_NAME;
   ['tab-checkout','tab-reserve','tab-checkin'].forEach(id => document.getElementById(id).disabled = !u);
   document.getElementById('tab-manage').style.display = staff ? '' : 'none';
   document.getElementById('tab-users').style.display  = a ? '' : 'none';
   document.getElementById('tab-log').style.display    = staff ? '' : 'none';
+  document.getElementById('tab-signin').style.display = isSuperAdmin ? '' : 'none';
   document.getElementById('admin-post-bar').classList.toggle('show', staff);
   if (!staff && ['sec-manage','sec-log'].some(id => document.getElementById(id).classList.contains('on'))) sw('browse');
   if (!a && document.getElementById('sec-users').classList.contains('on')) sw('browse');
+  if (!isSuperAdmin && document.getElementById('sec-signin').classList.contains('on')) sw('browse');
   renderAnnouncements();
 }
 
@@ -630,7 +642,7 @@ function badgeHtml(s) {
 async function refresh() {
   [_items,_checkouts,_reservations,_log,_users] = await Promise.all([loadItems(),loadCheckouts(),loadReservations(),loadLog(),loadUsers()]);
   renderStats(); renderBrowse(); populateSelects(); populateCatDropdown();
-  renderCoActive(); renderResActive(); renderReturnList(); renderManage(); renderUsers(); renderLog();
+  renderCoActive(); renderResActive(); renderReturnList(); renderManage(); renderUsers(); renderLog(); renderSigninLog();
   updateReserveForField();
 }
 
@@ -769,7 +781,10 @@ function renderUsers() {
 
 function renderLog() {
   const q=(document.getElementById('log-srch').value||'').toLowerCase();
-  const list=_log.filter(l=>!q||JSON.stringify(l).toLowerCase().includes(q));
+  const list=_log.filter(l=>{
+    if(l.type==='signin') return false; // sign-ins have their own tab
+    return !q||JSON.stringify(l).toLowerCase().includes(q);
+  });
   const el=document.getElementById('log-panel');
   if(!list.length){el.innerHTML='<p class="empty">No activity yet</p>';return;}
   el.innerHTML=list.map(l=>`<div class="log-row">
@@ -779,6 +794,21 @@ function renderLog() {
       — ${l.item_name} ×${l.qty}
       <span style="color:var(--text2)"> · ${l.person}</span>
       ${l.note?`<span style="color:var(--text2)"> · ${l.note}</span>`:''}
+      <div class="log-meta">${l.created_at?new Date(l.created_at).toLocaleString():''}</div>
+    </div></div>`).join('');
+}
+
+function renderSigninLog() {
+  const q=(document.getElementById('signin-srch').value||'').toLowerCase();
+  const list=_log.filter(l=>l.type==='signin'&&(!q||l.person.toLowerCase().includes(q)));
+  const el=document.getElementById('signin-panel');
+  if(!list.length){el.innerHTML='<p class="empty">No sign-ins recorded yet</p>';return;}
+  el.innerHTML=list.map(l=>`<div class="log-row">
+    <div class="dot dot-signin"></div>
+    <div>
+      <span style="font-weight:500">${l.person}</span>
+      <span style="color:var(--text2)"> signed in</span>
+      <span style="color:var(--text3);font-size:12px"> · ${l.note||''}</span>
       <div class="log-meta">${l.created_at?new Date(l.created_at).toLocaleString():''}</div>
     </div></div>`).join('');
 }
@@ -1098,11 +1128,12 @@ async function importFromExcel(event){
 
 // ── Nav ───────────────────────────────────────────────────────────
 function sw(name){
-  const names=['browse','checkout','reserve','checkin','manage','users','log'];
+  const names=['browse','checkout','reserve','checkin','manage','users','log','signin'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',names[i]===name));
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
   document.getElementById('sec-'+name).classList.add('on');
   if(name==='checkin') renderReturnList();
+  if(name==='signin') renderSigninLog();
 }
 function toast(msg){
   const t=document.getElementById('toast');
