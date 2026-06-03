@@ -125,7 +125,7 @@
   const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
   // ── STEP 2: Set your PINs ──
   const ADMIN_PIN = '1234';
-  const USER_PIN  = '2026';
+  const USER_PIN  = '0000';
 </script>
 
 <nav>
@@ -512,10 +512,16 @@ function renderResActive() {
     <th style="width:22%">Item</th><th style="width:8%">Qty</th><th style="width:16%">Person</th>
     <th style="width:12%">Start</th><th style="width:12%">End</th><th style="width:16%">Note</th><th style="width:14%"></th>
   </tr></thead><tbody>`+
-    _reservations.map(r=>`<tr><td>${r.item_name}</td><td>${r.qty}</td><td>${r.person}</td>
-      <td>${r.start_date||'—'}</td><td>${r.end_date||'—'}</td>
-      <td style="color:var(--text2)">${r.note||'—'}</td>
-      <td><button class="btn-sm btn-sm-red" onclick="cancelRes('${r.id}')">Cancel</button></td></tr>`).join('')+
+    _reservations.map(r=>{
+      const canCancel = session.role==='admin' || (session.role==='user' && session.name===r.person);
+      return `<tr><td>${r.item_name}</td><td>${r.qty}</td><td>${r.person}</td>
+        <td>${r.start_date||'—'}</td><td>${r.end_date||'—'}</td>
+        <td style="color:var(--text2)">${r.note||'—'}</td>
+        <td>${canCancel
+          ? `<button class="btn-sm btn-sm-red" onclick="cancelRes('${r.id}')">Cancel</button>`
+          : `<span style="font-size:11px;color:var(--text3)">Not yours</span>`}
+        </td></tr>`;
+    }).join('')+
   '</tbody></table>';
 }
 
