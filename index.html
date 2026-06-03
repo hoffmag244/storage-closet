@@ -407,7 +407,9 @@ function refreshTabAccess() {
   const u = !!session.role, a = session.role === 'admin';
   ['tab-checkout','tab-reserve','tab-checkin'].forEach(id => document.getElementById(id).disabled = !u);
   document.getElementById('tab-manage').disabled = !a;
+  document.getElementById('tab-log').style.display = a ? '' : 'none';
   document.getElementById('admin-post-bar').classList.toggle('show', a);
+  if (!a && document.getElementById('sec-log').classList.contains('on')) sw('browse');
   renderAnnouncements();
 }
 function updateReserveForField() {
