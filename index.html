@@ -116,9 +116,11 @@
   .admin-post-bar input{flex:1;max-width:520px;}
   @media(max-width:600px){.frow.c3,.frow.c4{grid-template-columns:1fr 1fr;}.stats{grid-template-columns:1fr 1fr 1fr;}}
 </style>
-<script>
- // ── CONFIG ──
+</head>
+<body>
 
+<script>
+  // ── CONFIG ──
   const SUPABASE_URL      = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
   const DEFAULT_PIN       = '0000';  // Every new user starts with this PIN
@@ -468,11 +470,14 @@ function openLogin(onSuccess) {
   document.getElementById('login-err').textContent = '';
   document.getElementById('login-pin').value = '';
   document.getElementById('login-name').value = session.name || '';
-  // Populate datalist
-  document.getElementById('login-name-list').innerHTML =
-    _users.map(u => `<option value="${u.name}">${u.name} (${roleLabel(u.role)})</option>`).join('');
   document.getElementById('login-modal').classList.add('open');
-  setTimeout(() => document.getElementById('login-name').focus(), 80);
+  // Always fetch fresh users so the list is ready even if page just loaded
+  loadUsers().then(users => {
+    _users = users;
+    document.getElementById('login-name-list').innerHTML =
+      _users.map(u => `<option value="${u.name}">${u.name} (${roleLabel(u.role)})</option>`).join('');
+    setTimeout(() => document.getElementById('login-name').focus(), 80);
+  });
 }
 function loginNameInput() {
   const val = document.getElementById('login-name').value.trim().toLowerCase();
