@@ -6,211 +6,137 @@
 <title>Storage Closet</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #ffffff;
-    --bg2: #f5f5f3;
-    --bg3: #ebebea;
-    --text: #1a1a18;
-    --text2: #6b6b66;
-    --text3: #9b9b96;
-    --border: rgba(0,0,0,0.12);
-    --border2: rgba(0,0,0,0.22);
-    --radius: 8px;
-    --radius-lg: 12px;
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --mono: 'SF Mono', 'Fira Mono', monospace;
+    --bg:#ffffff; --bg2:#f5f5f3; --bg3:#ebebea;
+    --text:#1a1a18; --text2:#6b6b66; --text3:#9b9b96;
+    --border:rgba(0,0,0,0.12); --border2:rgba(0,0,0,0.22);
+    --radius:8px; --radius-lg:12px;
+    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --mono:'SF Mono','Fira Mono',monospace;
   }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1a;
-      --bg2: #242422;
-      --bg3: #2e2e2c;
-      --text: #f0f0ec;
-      --text2: #a0a09a;
-      --text3: #6a6a64;
-      --border: rgba(255,255,255,0.1);
-      --border2: rgba(255,255,255,0.2);
-    }
+  @media(prefers-color-scheme:dark){
+    :root{ --bg:#1c1c1a; --bg2:#242422; --bg3:#2e2e2c; --text:#f0f0ec; --text2:#a0a09a; --text3:#6a6a64; --border:rgba(255,255,255,0.1); --border2:rgba(255,255,255,0.2); }
   }
-
-  body { font-family: var(--font); background: var(--bg2); color: var(--text); min-height: 100vh; }
-
-  /* NAV */
-  nav { background: var(--bg); border-bottom: 0.5px solid var(--border2); padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem; height: 52px; }
-  .nav-title { font-size: 15px; font-weight: 500; color: var(--text); flex: 1; }
-  .nav-user { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 8px; }
-  .nav-badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; }
-  .badge-admin { background: #FAEEDA; color: #633806; }
-  .badge-user  { background: #E1F5EE; color: #085041; }
-  .btn-link { background: none; border: none; color: var(--text2); font-size: 13px; cursor: pointer; padding: 4px 8px; border-radius: var(--radius); }
-  .btn-link:hover { background: var(--bg3); }
-
-  /* LAYOUT */
-  .page { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem; }
-
-  /* STATS */
-  .stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 1.25rem; }
-  .stat { background: var(--bg); border-radius: var(--radius); padding: 12px 16px; border: 0.5px solid var(--border); }
-  .stat-l { font-size: 11px; color: var(--text2); margin-bottom: 2px; }
-  .stat-v { font-size: 24px; font-weight: 500; }
-  .sv-g { color: #1D9E75; } .sv-r { color: #A32D2D; } .sv-b { color: #185FA5; }
-
-  /* TABS */
-  .tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; border-bottom: 0.5px solid var(--border); }
-  .tab { padding: 8px 14px; font-size: 13px; color: var(--text2); cursor: pointer; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
-  .tab.on { color: var(--text); font-weight: 500; border-bottom-color: var(--text); }
-  .tab:disabled { opacity: 0.4; cursor: default; }
-
-  /* SECTIONS */
-  .sec { display: none; } .sec.on { display: block; }
-
-  /* TOPBAR */
-  .topbar { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
-  .topbar input, .topbar select { flex: 1; min-width: 120px; }
-
-  /* GRID */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 1rem; }
-  .item-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
-  .item-card:hover { border-color: var(--border2); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-  .ic-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
-  .ic-sub { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
-  .ic-footer { display: flex; justify-content: space-between; align-items: center; }
-  .ic-notes { font-size: 11px; color: var(--text3); margin-top: 6px; }
-
-  /* BADGES */
-  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; }
-  .b-avail { background: #E1F5EE; color: #085041; }
-  .b-out   { background: #FCEBEB; color: #791F1F; }
-  .b-res   { background: #E6F1FB; color: #0C447C; }
-  .qty-pill { font-size: 12px; color: var(--text2); }
-  .loc-tag { font-size: 11px; background: var(--bg2); color: var(--text2); padding: 2px 7px; border-radius: var(--radius); font-family: var(--mono); }
-
-  /* PANEL */
-  .panel { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
-  .panel-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 1rem; }
-  .panel-bare { padding: 0 1.25rem; }
-
-  /* FORM */
-  .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-  .frow.c3 { grid-template-columns: 1fr 1fr 1fr; }
-  .frow.c4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 12px; color: var(--text2); }
-  input, select, textarea {
-    width: 100%; padding: 7px 10px; font-size: 13px; font-family: var(--font);
-    background: var(--bg); color: var(--text);
-    border: 0.5px solid var(--border2); border-radius: var(--radius);
-    outline: none;
-  }
-  input:focus, select:focus { border-color: #378ADD; box-shadow: 0 0 0 2px rgba(55,138,221,0.15); }
-  .btn-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-  button { font-family: var(--font); cursor: pointer; }
-  .btn  { padding: 8px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 500; border: 0.5px solid; }
-  .btn-green  { background: #E1F5EE; color: #085041; border-color: #5DCAA5; }
-  .btn-amber  { background: #FAEEDA; color: #633806; border-color: #EF9F27; }
-  .btn-blue   { background: #E6F1FB; color: #0C447C; border-color: #85B7EB; }
-  .btn-ghost  { background: transparent; color: var(--text2); border-color: var(--border2); }
-  .btn-red    { background: #FCEBEB; color: #791F1F; border-color: #F09595; }
-  .btn-sm { padding: 4px 10px; font-size: 12px; border-radius: var(--radius); border: 0.5px solid; font-weight: 500; }
-  .btn-sm-teal { background: #E1F5EE; color: #085041; border-color: #5DCAA5; }
-  .btn-sm-red  { background: #FCEBEB; color: #791F1F; border-color: #F09595; }
-
-  /* TABLE */
-  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-  .tbl th { text-align: left; font-size: 11px; color: var(--text2); font-weight: 500; padding: 6px 8px; border-bottom: 0.5px solid var(--border); }
-  .tbl td { padding: 8px 8px; border-bottom: 0.5px solid var(--border); color: var(--text); word-break: break-word; vertical-align: middle; }
-  .tbl tr:last-child td { border-bottom: none; }
-
-  /* LOG */
-  .log-row { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
-  .log-row:last-child { border-bottom: none; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
-  .dot-out { background: #BA7517; } .dot-in { background: #1D9E75; } .dot-res { background: #185FA5; }
-  .log-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
-
-  /* ITEM ACTION MODAL */
-  .item-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 2rem 1rem; }
-  .item-modal-overlay.open { display: flex; }
-  .item-modal { background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius-lg); width: 100%; max-width: 460px; overflow: hidden; margin: auto; }
-  .item-modal-header { padding: 1.25rem 1.25rem 1rem; border-bottom: 0.5px solid var(--border); }
-  .item-modal-name { font-size: 17px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
-  .item-modal-meta { font-size: 12px; color: var(--text2); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .item-modal-tabs { display: flex; border-bottom: 0.5px solid var(--border); }
-  .item-modal-tab { flex: 1; padding: 10px; font-size: 13px; font-weight: 500; background: none; border: none; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
-  .item-modal-tab.on { color: var(--text); border-bottom-color: var(--text); }
-  .item-modal-body { padding: 1.25rem; }
-  .item-modal-action { display: none; } .item-modal-action.on { display: block; }
-  .item-modal-footer { display: flex; gap: 8px; justify-content: flex-end; padding: 0 1.25rem 1.25rem; }
-
-  /* MODAL */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius-lg); padding: 1.5rem; width: 100%; max-width: 380px; margin: 1rem; }
-  .modal-title { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
-  .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 1.25rem; }
-  .modal-err { font-size: 12px; color: #A32D2D; margin-top: 8px; min-height: 18px; }
-
-  /* EMPTY / LOADING */
-  .empty { text-align: center; color: var(--text2); font-size: 13px; padding: 2rem 0; }
-  .loading { text-align: center; color: var(--text3); font-size: 13px; padding: 1.5rem 0; }
-
-  /* TOAST */
-  #toast { position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%); background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 9px 18px; font-size: 13px; color: var(--text); opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 200; white-space: nowrap; }
-  #toast.show { opacity: 1; }
-
-  /* CONFIG BANNER */
-  .config-banner { background: #FAEEDA; border: 0.5px solid #EF9F27; border-radius: var(--radius); padding: 12px 16px; font-size: 13px; color: #633806; margin-bottom: 1.25rem; }
-  .config-banner code { font-family: var(--mono); background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
-
-  @media (max-width: 600px) {
-    .frow.c3, .frow.c4 { grid-template-columns: 1fr 1fr; }
-    .stats { grid-template-columns: 1fr 1fr 1fr; }
-  }
+  body{font-family:var(--font);background:var(--bg2);color:var(--text);min-height:100vh;}
+  nav{background:var(--bg);border-bottom:0.5px solid var(--border2);padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:52px;}
+  .nav-title{font-size:15px;font-weight:500;color:var(--text);flex:1;}
+  .nav-user{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px;}
+  .nav-badge{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;}
+  .badge-admin{background:#FAEEDA;color:#633806;} .badge-user{background:#E1F5EE;color:#085041;}
+  .btn-link{background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:4px 8px;border-radius:var(--radius);}
+  .btn-link:hover{background:var(--bg3);}
+  .page{max-width:960px;margin:0 auto;padding:1.5rem 1rem;}
+  .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
+  .stat{background:var(--bg);border-radius:var(--radius);padding:12px 16px;border:0.5px solid var(--border);}
+  .stat-l{font-size:11px;color:var(--text2);margin-bottom:2px;}
+  .stat-v{font-size:24px;font-weight:500;}
+  .sv-g{color:#1D9E75;} .sv-r{color:#A32D2D;} .sv-b{color:#185FA5;}
+  .tabs{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:0.5px solid var(--border);overflow-x:auto;}
+  .tab{padding:8px 14px;font-size:13px;color:var(--text2);cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+  .tab.on{color:var(--text);font-weight:500;border-bottom-color:var(--text);}
+  .tab:disabled{opacity:0.4;cursor:default;}
+  .sec{display:none;} .sec.on{display:block;}
+  .topbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;}
+  .topbar input,.topbar select{flex:1;min-width:120px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:1rem;}
+  .item-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+  .item-card:hover{border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,0.07);}
+  .ic-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;}
+  .ic-sub{font-size:12px;color:var(--text2);margin-bottom:8px;}
+  .ic-footer{display:flex;justify-content:space-between;align-items:center;}
+  .ic-notes{font-size:11px;color:var(--text3);margin-top:6px;}
+  .ic-tap{font-size:11px;color:var(--text3);margin-top:6px;}
+  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;}
+  .b-avail{background:#E1F5EE;color:#085041;} .b-out{background:#FCEBEB;color:#791F1F;} .b-res{background:#E6F1FB;color:#0C447C;}
+  .qty-pill{font-size:12px;color:var(--text2);}
+  .loc-tag{font-size:11px;background:var(--bg2);color:var(--text2);padding:2px 7px;border-radius:var(--radius);font-family:var(--mono);}
+  .panel{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1rem;}
+  .panel-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:1rem;}
+  .panel-bare{padding:0 1.25rem;}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .frow.c3{grid-template-columns:1fr 1fr 1fr;} .frow.c4{grid-template-columns:1fr 1fr 1fr 1fr;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field label{font-size:12px;color:var(--text2);}
+  input,select,textarea{width:100%;padding:7px 10px;font-size:13px;font-family:var(--font);background:var(--bg);color:var(--text);border:0.5px solid var(--border2);border-radius:var(--radius);outline:none;}
+  input:focus,select:focus{border-color:#378ADD;box-shadow:0 0 0 2px rgba(55,138,221,0.15);}
+  .btn-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  button{font-family:var(--font);cursor:pointer;}
+  .btn{padding:8px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;border:0.5px solid;}
+  .btn-green{background:#E1F5EE;color:#085041;border-color:#5DCAA5;}
+  .btn-amber{background:#FAEEDA;color:#633806;border-color:#EF9F27;}
+  .btn-blue{background:#E6F1FB;color:#0C447C;border-color:#85B7EB;}
+  .btn-ghost{background:transparent;color:var(--text2);border-color:var(--border2);}
+  .btn-red{background:#FCEBEB;color:#791F1F;border-color:#F09595;}
+  .btn-sm{padding:4px 10px;font-size:12px;border-radius:var(--radius);border:0.5px solid;font-weight:500;}
+  .btn-sm-teal{background:#E1F5EE;color:#085041;border-color:#5DCAA5;}
+  .btn-sm-red{background:#FCEBEB;color:#791F1F;border-color:#F09595;}
+  .tbl{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+  .tbl th{text-align:left;font-size:11px;color:var(--text2);font-weight:500;padding:6px 8px;border-bottom:0.5px solid var(--border);}
+  .tbl td{padding:8px 8px;border-bottom:0.5px solid var(--border);color:var(--text);word-break:break-word;vertical-align:middle;}
+  .tbl tr:last-child td{border-bottom:none;}
+  .log-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+  .log-row:last-child{border-bottom:none;}
+  .dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+  .dot-out{background:#BA7517;} .dot-in{background:#1D9E75;} .dot-res{background:#185FA5;}
+  .log-meta{font-size:11px;color:var(--text3);margin-top:2px;}
+  /* overlays */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center;overflow-y:auto;padding:2rem 1rem;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:1.5rem;width:100%;max-width:400px;margin:auto;}
+  .modal-title{font-size:16px;font-weight:500;margin-bottom:6px;}
+  .modal-sub{font-size:13px;color:var(--text2);margin-bottom:1.25rem;}
+  .modal-err{font-size:12px;color:#A32D2D;margin-top:8px;min-height:18px;}
+  /* item action modal */
+  .item-modal{background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius-lg);width:100%;max-width:480px;overflow:hidden;margin:auto;}
+  .im-header{padding:1.25rem 1.25rem 1rem;border-bottom:0.5px solid var(--border);}
+  .im-name{font-size:17px;font-weight:500;color:var(--text);margin-bottom:6px;}
+  .im-meta{font-size:12px;color:var(--text2);display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .im-tabs{display:flex;border-bottom:0.5px solid var(--border);}
+  .im-tab{flex:1;padding:10px;font-size:13px;font-weight:500;background:none;border:none;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .im-tab.on{color:var(--text);border-bottom-color:var(--text);}
+  .im-body{padding:1.25rem;}
+  .im-action{display:none;} .im-action.on{display:block;}
+  .im-footer{display:flex;gap:8px;justify-content:flex-end;padding:0 1.25rem 1.25rem;}
+  /* return verify modal */
+  .empty{text-align:center;color:var(--text2);font-size:13px;padding:2rem 0;}
+  #toast{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);padding:9px 18px;font-size:13px;color:var(--text);opacity:0;transition:opacity .3s;pointer-events:none;z-index:200;white-space:nowrap;}
+  #toast.show{opacity:1;}
+  .config-banner{background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:var(--radius);padding:12px 16px;font-size:13px;color:#633806;margin-bottom:1.25rem;}
+  .config-banner code{font-family:var(--mono);background:rgba(0,0,0,0.08);padding:1px 5px;border-radius:4px;font-size:12px;}
+  @media(max-width:600px){.frow.c3,.frow.c4{grid-template-columns:1fr 1fr;} .stats{grid-template-columns:1fr 1fr 1fr;}}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════ SUPABASE CONFIG -->
 <script>
-  // ┌─────────────────────────────────────────────────────────────┐
-  // │  STEP 1 — Paste your Supabase credentials here             │
-  // └─────────────────────────────────────────────────────────────┘
-  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-
-  // ┌─────────────────────────────────────────────────────────────┐
-  // │  STEP 2 — Set your PINs                                    │
-  // └─────────────────────────────────────────────────────────────┘
-  const ADMIN_PIN = '1234';   // Change this! Manages items
-  const USER_PIN  = '0000';   // Change this! Check out / reserve
+  // ── STEP 1: Paste your Supabase credentials ──
+  const SUPABASE_URL     = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
+  // ── STEP 2: Set your PINs ──
+  const ADMIN_PIN = '1234';
+  const USER_PIN  = '2026';
 </script>
 
-<!-- ═══════════════════════════════════════════════ NAV -->
 <nav>
   <span class="nav-title">📦 Storage Closet</span>
-  <div class="nav-user" id="nav-user">
+  <div class="nav-user">
     <span id="nav-name" style="color:var(--text2);font-size:13px">Not signed in</span>
     <button class="btn-link" id="nav-btn" onclick="openLogin()">Sign in</button>
   </div>
 </nav>
 
-<!-- ═══════════════════════════════════════════════ MAIN -->
 <div class="page">
   <div id="config-banner" class="config-banner" style="display:none">
-    ⚠️ Supabase not configured. Open <code>index.html</code> and replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> with your project credentials. See the setup guide below.
+    ⚠️ Supabase not configured. Replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> at the top of index.html.
   </div>
-
   <div class="stats" id="stats"></div>
-
-  <div class="tabs" id="tabs">
-    <button class="tab on" onclick="sw('browse')">Browse</button>
-    <button class="tab" onclick="sw('checkout')" id="tab-checkout">Check out</button>
-    <button class="tab" onclick="sw('reserve')"  id="tab-reserve">Reserve</button>
-    <button class="tab" onclick="sw('checkin')"  id="tab-checkin">Return</button>
-    <button class="tab" onclick="sw('manage')"   id="tab-manage">Manage</button>
-    <button class="tab" onclick="sw('log')"      id="tab-log">Log</button>
+  <div class="tabs">
+    <button class="tab on"  onclick="sw('browse')">Browse</button>
+    <button class="tab" id="tab-checkout" onclick="sw('checkout')">Check out</button>
+    <button class="tab" id="tab-reserve"  onclick="sw('reserve')">Reserve</button>
+    <button class="tab" id="tab-checkin"  onclick="sw('checkin')">Return</button>
+    <button class="tab" id="tab-manage"   onclick="sw('manage')">Manage</button>
+    <button class="tab" id="tab-log"      onclick="sw('log')">Log</button>
   </div>
 
   <!-- BROWSE -->
@@ -228,7 +154,7 @@
     <div id="browse-grid" class="grid"></div>
   </div>
 
-  <!-- CHECK OUT -->
+  <!-- CHECK OUT (tab) -->
   <div id="sec-checkout" class="sec">
     <div class="panel">
       <div class="panel-title">Check out item</div>
@@ -237,7 +163,7 @@
         <div class="field"><label>Quantity</label><input type="number" id="co-qty" value="1" min="1"></div>
       </div>
       <div class="frow c3">
-        <div class="field"><label>Your name</label><input type="text" id="co-person" placeholder="Name"></div>
+        <div class="field"><label>Your name</label><input type="text" id="co-person" placeholder="Name" readonly></div>
         <div class="field"><label>Due back (optional)</label><input type="date" id="co-due"></div>
         <div class="field"><label>Note</label><input type="text" id="co-note" placeholder="Purpose…"></div>
       </div>
@@ -249,7 +175,7 @@
     </div>
   </div>
 
-  <!-- RESERVE -->
+  <!-- RESERVE (tab) -->
   <div id="sec-reserve" class="sec">
     <div class="panel">
       <div class="panel-title">Reserve an item</div>
@@ -258,7 +184,8 @@
         <div class="field"><label>Quantity</label><input type="number" id="res-qty" value="1" min="1"></div>
       </div>
       <div class="frow c3">
-        <div class="field"><label>Your name</label><input type="text" id="res-person" placeholder="Name"></div>
+        <div class="field"><label>Reserved for <span id="res-for-label" style="color:var(--text3)">(you)</span></label>
+          <input type="text" id="res-person" placeholder="Name"></div>
         <div class="field"><label>Start date</label><input type="date" id="res-start"></div>
         <div class="field"><label>End date</label><input type="date" id="res-end"></div>
       </div>
@@ -271,19 +198,16 @@
     </div>
   </div>
 
-  <!-- RETURN -->
+  <!-- RETURN (tab) -->
   <div id="sec-checkin" class="sec">
     <div class="panel">
       <div class="panel-title">Return item</div>
-      <div class="frow">
-        <div class="field"><label>Select checkout to return</label><select id="ci-tx"></select></div>
-        <div class="field"><label>Condition note (optional)</label><input type="text" id="ci-note" placeholder="Good, damaged…"></div>
-      </div>
-      <div class="btn-row"><button class="btn btn-green" onclick="doReturn()">Return item</button></div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">Select the checkout you want to return. You must be signed in as the person who checked it out, or as admin.</p>
+      <div id="return-list"></div>
     </div>
   </div>
 
-  <!-- MANAGE (admin only) -->
+  <!-- MANAGE -->
   <div id="sec-manage" class="sec">
     <div class="panel">
       <div class="panel-title">Add item to closet</div>
@@ -318,60 +242,79 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ ITEM ACTION MODAL -->
-<div class="item-modal-overlay" id="item-modal">
+<!-- ══ ITEM ACTION MODAL ══ -->
+<div class="overlay" id="item-modal">
   <div class="item-modal">
-    <div class="item-modal-header">
+    <div class="im-header">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div>
-          <div class="item-modal-name" id="im-name"></div>
-          <div class="item-modal-meta">
+          <div class="im-name" id="im-name"></div>
+          <div class="im-meta">
             <span id="im-badge"></span>
             <span class="loc-tag" id="im-loc"></span>
-            <span id="im-avail" style="color:var(--text2)"></span>
+            <span id="im-avail"></span>
           </div>
         </div>
-        <button class="btn-link" onclick="closeItemModal()" style="font-size:18px;padding:2px 8px">✕</button>
+        <button class="btn-link" onclick="closeItemModal()" style="font-size:18px">✕</button>
       </div>
-      <div id="im-notes" style="font-size:12px;color:var(--text3);margin-top:8px"></div>
+      <div id="im-notes" style="font-size:12px;color:var(--text3);margin-top:6px"></div>
     </div>
-    <div class="item-modal-tabs">
-      <button class="item-modal-tab on" id="imt-checkout" onclick="switchItemTab('checkout')">Check out</button>
-      <button class="item-modal-tab" id="imt-reserve" onclick="switchItemTab('reserve')">Reserve</button>
+    <div class="im-tabs">
+      <button class="im-tab on" id="imt-co" onclick="switchImTab('co')">Check out</button>
+      <button class="im-tab" id="imt-res" onclick="switchImTab('res')">Reserve</button>
     </div>
-    <div class="item-modal-body">
-      <!-- CHECK OUT -->
-      <div class="item-modal-action on" id="ima-checkout">
+    <div class="im-body">
+      <div class="im-action on" id="ima-co">
         <div class="frow" style="margin-bottom:10px">
           <div class="field"><label>Quantity</label><input type="number" id="im-co-qty" value="1" min="1"></div>
           <div class="field"><label>Due back (optional)</label><input type="date" id="im-co-due"></div>
         </div>
-        <div class="field" style="margin-bottom:10px"><label>Note (optional)</label><input type="text" id="im-co-note" placeholder="Purpose, project…"></div>
+        <div class="field"><label>Note (optional)</label><input type="text" id="im-co-note" placeholder="Purpose…"></div>
       </div>
-      <!-- RESERVE -->
-      <div class="item-modal-action" id="ima-reserve">
+      <div class="im-action" id="ima-res">
         <div class="frow" style="margin-bottom:10px">
           <div class="field"><label>Quantity</label><input type="number" id="im-res-qty" value="1" min="1"></div>
           <div class="field"><label>Start date</label><input type="date" id="im-res-start"></div>
         </div>
         <div class="frow" style="margin-bottom:10px">
           <div class="field"><label>End date (optional)</label><input type="date" id="im-res-end"></div>
-          <div class="field"><label>Note (optional)</label><input type="text" id="im-res-note" placeholder="Event, project…"></div>
+          <div class="field"><label>Note (optional)</label><input type="text" id="im-res-note" placeholder="Event…"></div>
+        </div>
+        <div class="field" id="im-res-for-wrap" style="display:none;margin-top:4px">
+          <label>Reserve for (admin: assign to someone)</label>
+          <input type="text" id="im-res-for" placeholder="Person's name">
         </div>
       </div>
     </div>
-    <div class="item-modal-footer">
+    <div class="im-footer">
       <button class="btn btn-ghost" onclick="closeItemModal()">Cancel</button>
       <button class="btn btn-amber" id="im-submit-btn" onclick="submitItemModal()">Check out</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ LOGIN MODAL -->
-<div class="modal-overlay" id="login-modal">
+<!-- ══ RETURN VERIFY MODAL ══ -->
+<div class="overlay" id="return-modal">
   <div class="modal">
-    <div class="modal-title" id="login-title">Sign in</div>
-    <div class="modal-sub" id="login-sub">Enter your name and PIN to check out or make changes.</div>
+    <div class="modal-title">Confirm return</div>
+    <div class="modal-sub" id="return-modal-sub"></div>
+    <div class="field" style="margin-bottom:10px">
+      <label>Condition note (optional)</label>
+      <input type="text" id="ret-note" placeholder="Good, damaged…">
+    </div>
+    <div class="modal-err" id="return-err"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeReturnModal()">Cancel</button>
+      <button class="btn btn-green" onclick="confirmReturn()">Confirm return</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOGIN MODAL ══ -->
+<div class="overlay" id="login-modal">
+  <div class="modal">
+    <div class="modal-title">Sign in</div>
+    <div class="modal-sub">Enter your name and PIN to check out or make changes.</div>
     <div class="field" style="margin-bottom:10px">
       <label>Your name</label>
       <input type="text" id="login-name" placeholder="First name or ID" autocomplete="off">
@@ -388,220 +331,196 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ TOAST -->
 <div id="toast"></div>
 
-<!-- ═══════════════════════════════════════════════ SUPABASE + APP -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ─── Supabase client ───────────────────────────────────────────────
 const configured = SUPABASE_URL !== 'YOUR_SUPABASE_URL';
 let sb = null;
-if (configured) {
-  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} else {
-  document.getElementById('config-banner').style.display = 'block';
-}
+if (configured) sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+else document.getElementById('config-banner').style.display = 'block';
 
-// ─── Auth state ────────────────────────────────────────────────────
-let session = { name: null, role: null }; // role: 'user' | 'admin'
+// ── Auth ──────────────────────────────────────────────────────────
+let session = { name: null, role: null };
 
-function openLogin() {
+function openLogin(onSuccess) {
+  _loginCallback = onSuccess || null;
   document.getElementById('login-err').textContent = '';
   document.getElementById('login-name').value = session.name || '';
   document.getElementById('login-pin').value = '';
   document.getElementById('login-modal').classList.add('open');
   setTimeout(() => document.getElementById('login-name').focus(), 50);
 }
-function closeLogin() {
-  document.getElementById('login-modal').classList.remove('open');
-}
+function closeLogin() { document.getElementById('login-modal').classList.remove('open'); }
+let _loginCallback = null;
+
 function submitLogin() {
   const name = document.getElementById('login-name').value.trim();
   const pin  = document.getElementById('login-pin').value.trim();
   if (!name) { document.getElementById('login-err').textContent = 'Enter your name.'; return; }
-  if (pin === ADMIN_PIN) {
-    session = { name, role: 'admin' };
-  } else if (pin === USER_PIN) {
-    session = { name, role: 'user' };
-  } else {
-    document.getElementById('login-err').textContent = 'Incorrect PIN.';
-    return;
-  }
+  if (pin === ADMIN_PIN)     session = { name, role: 'admin' };
+  else if (pin === USER_PIN) session = { name, role: 'user' };
+  else { document.getElementById('login-err').textContent = 'Incorrect PIN.'; return; }
   closeLogin();
   updateNav();
   refreshTabAccess();
+  updateReserveForField();
   toast(`Signed in as ${name}`);
+  if (_loginCallback) { _loginCallback(); _loginCallback = null; }
 }
 function signOut() {
   session = { name: null, role: null };
-  updateNav();
-  refreshTabAccess();
-  sw('browse');
-  toast('Signed out');
+  updateNav(); refreshTabAccess(); updateReserveForField(); sw('browse'); toast('Signed out');
 }
-
 function updateNav() {
-  const nameEl = document.getElementById('nav-name');
-  const btnEl  = document.getElementById('nav-btn');
-  if (session.role) {
-    nameEl.textContent = session.name;
-    nameEl.innerHTML += ` <span class="nav-badge badge-${session.role === 'admin' ? 'admin' : 'user'}">${session.role}</span>`;
-    btnEl.textContent = 'Sign out';
-    btnEl.onclick = signOut;
-  } else {
-    nameEl.textContent = 'Not signed in';
-    btnEl.textContent = 'Sign in';
-    btnEl.onclick = openLogin;
-  }
+  document.getElementById('nav-name').innerHTML = session.role
+    ? `${session.name} <span class="nav-badge badge-${session.role==='admin'?'admin':'user'}">${session.role}</span>`
+    : 'Not signed in';
+  const btn = document.getElementById('nav-btn');
+  btn.textContent = session.role ? 'Sign out' : 'Sign in';
+  btn.onclick = session.role ? signOut : openLogin;
 }
-
 function refreshTabAccess() {
-  const isUser  = !!session.role;
+  const u = !!session.role, a = session.role === 'admin';
+  ['tab-checkout','tab-reserve','tab-checkin'].forEach(id => document.getElementById(id).disabled = !u);
+  document.getElementById('tab-manage').disabled = !a;
+}
+function updateReserveForField() {
+  // admin sees "reserve for" field; regular users get their own name auto-filled
   const isAdmin = session.role === 'admin';
-  ['tab-checkout','tab-reserve','tab-checkin'].forEach(id => {
-    document.getElementById(id).disabled = !isUser;
-  });
-  document.getElementById('tab-manage').disabled = !isAdmin;
+  document.getElementById('res-for-label').textContent = isAdmin ? '(admin: assign to anyone)' : '(you)';
+  const rp = document.getElementById('res-person');
+  if (session.role === 'user') { rp.value = session.name; rp.readOnly = true; }
+  else if (session.role === 'admin') { rp.value = ''; rp.readOnly = false; rp.placeholder = 'Person\'s name'; }
+  else { rp.value = ''; rp.readOnly = false; }
+  // same for item modal reserve-for
+  const wrap = document.getElementById('im-res-for-wrap');
+  if (wrap) wrap.style.display = isAdmin ? 'block' : 'none';
 }
 
-// ─── Data helpers ──────────────────────────────────────────────────
-async function dbQ(table, query) {
+// ── Data ──────────────────────────────────────────────────────────
+let _items=[], _checkouts=[], _reservations=[], _log=[];
+
+async function dbQ(table, fn) {
   if (!sb) return [];
-  const { data, error } = await query(sb.from(table));
+  const { data, error } = await fn(sb.from(table));
   if (error) { console.error(error); return []; }
   return data || [];
 }
+async function loadItems()        { return dbQ('items', q => q.select('*').order('name')); }
+async function loadCheckouts()    { return dbQ('checkouts', q => q.select('*').eq('status','out').order('created_at',{ascending:false})); }
+async function loadReservations() { return dbQ('reservations', q => q.select('*').eq('status','active').order('start_date')); }
+async function loadLog()          { return dbQ('activity_log', q => q.select('*').order('created_at',{ascending:false}).limit(200)); }
 
-async function loadItems() {
-  return dbQ('items', q => q.select('*').order('name'));
-}
-async function loadCheckouts() {
-  return dbQ('checkouts', q => q.select('*').eq('status','out').order('created_at', { ascending: false }));
-}
-async function loadReservations() {
-  return dbQ('reservations', q => q.select('*').eq('status','active').order('start_date'));
-}
-async function loadLog() {
-  return dbQ('activity_log', q => q.select('*').order('created_at', { ascending: false }).limit(200));
-}
-
-function availQty(item, checkouts) {
-  const out = checkouts.filter(t => t.item_id === item.id).reduce((s,t) => s + t.qty, 0);
-  return Math.max(0, item.qty - out);
-}
-function iStatus(item, checkouts, reservations) {
-  if (availQty(item, checkouts) === 0) return 'out';
-  if (reservations.some(r => r.item_id === item.id)) return 'res';
+function availQty(item, cos) { return Math.max(0, item.qty - cos.filter(t=>t.item_id===item.id).reduce((s,t)=>s+t.qty,0)); }
+function iStatus(item, cos, res) {
+  if (availQty(item,cos)===0) return 'out';
+  if (res.some(r=>r.item_id===item.id)) return 'res';
   return 'avail';
 }
 function badgeHtml(s) {
-  if (s === 'out') return '<span class="badge b-out">Checked out</span>';
-  if (s === 'res') return '<span class="badge b-res">Reserved</span>';
+  if (s==='out') return '<span class="badge b-out">Checked out</span>';
+  if (s==='res') return '<span class="badge b-res">Reserved</span>';
   return '<span class="badge b-avail">Available</span>';
 }
 
-// ─── Render helpers ────────────────────────────────────────────────
-let _items=[], _checkouts=[], _reservations=[], _log=[];
-
 async function refresh() {
-  [_items, _checkouts, _reservations, _log] = await Promise.all([loadItems(), loadCheckouts(), loadReservations(), loadLog()]);
-  renderStats();
-  renderBrowse();
-  populateSelects();
-  renderCoActive();
-  renderResActive();
-  renderManage();
-  renderLog();
+  [_items,_checkouts,_reservations,_log] = await Promise.all([loadItems(),loadCheckouts(),loadReservations(),loadLog()]);
+  renderStats(); renderBrowse(); populateSelects(); renderCoActive(); renderResActive(); renderReturnList(); renderManage(); renderLog();
 }
 
+// ── Render ────────────────────────────────────────────────────────
 function renderStats() {
-  const avail = _items.filter(i => iStatus(i,_checkouts,_reservations)==='avail').length;
-  const out   = _checkouts.length;
-  const res   = _reservations.length;
-  document.getElementById('stats').innerHTML = `
-    <div class="stat"><div class="stat-l">Available items</div><div class="stat-v sv-g">${avail}</div></div>
-    <div class="stat"><div class="stat-l">Checked out</div><div class="stat-v sv-r">${out}</div></div>
-    <div class="stat"><div class="stat-l">Reservations</div><div class="stat-v sv-b">${res}</div></div>
-  `;
+  const av=_items.filter(i=>iStatus(i,_checkouts,_reservations)==='avail').length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><div class="stat-l">Available items</div><div class="stat-v sv-g">${av}</div></div>
+    <div class="stat"><div class="stat-l">Checked out</div><div class="stat-v sv-r">${_checkouts.length}</div></div>
+    <div class="stat"><div class="stat-l">Reservations</div><div class="stat-v sv-b">${_reservations.length}</div></div>`;
 }
 
 function renderBrowse() {
-  const q  = (document.getElementById('srch').value || '').toLowerCase();
-  const fc = document.getElementById('fcat').value;
-  const fs = document.getElementById('fstat').value;
-
-  const cats = [...new Set(_items.map(i => i.category))].sort();
-  const fcat = document.getElementById('fcat');
-  const prev = fcat.value;
-  fcat.innerHTML = '<option value="">All categories</option>' +
-    cats.map(c => `<option value="${c}"${c===prev?' selected':''}>${c}</option>`).join('');
-
-  let list = _items.filter(i => {
-    const m = !q || i.name.toLowerCase().includes(q) || (i.location||'').toLowerCase().includes(q) ||
-              (i.category||'').toLowerCase().includes(q) || (i.sku||'').toLowerCase().includes(q);
-    const s = iStatus(i, _checkouts, _reservations);
-    return m && (!fc || i.category===fc) && (!fs || s===fs);
+  const q=(document.getElementById('srch').value||'').toLowerCase();
+  const fc=document.getElementById('fcat').value;
+  const fs=document.getElementById('fstat').value;
+  const cats=[...new Set(_items.map(i=>i.category))].sort();
+  const fcat=document.getElementById('fcat'); const prev=fcat.value;
+  fcat.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option value="${c}"${c===prev?' selected':''}>${c}</option>`).join('');
+  let list=_items.filter(i=>{
+    const m=!q||i.name.toLowerCase().includes(q)||(i.location||'').toLowerCase().includes(q)||(i.category||'').toLowerCase().includes(q)||(i.sku||'').toLowerCase().includes(q);
+    const s=iStatus(i,_checkouts,_reservations);
+    return m&&(!fc||i.category===fc)&&(!fs||s===fs);
   });
-
-  const el = document.getElementById('browse-grid');
-  if (!list.length) { el.innerHTML = '<p class="empty">No items found</p>'; return; }
-  el.innerHTML = list.map(item => {
-    const s = iStatus(item, _checkouts, _reservations);
-    const av = availQty(item, _checkouts);
+  const el=document.getElementById('browse-grid');
+  if(!list.length){el.innerHTML='<p class="empty">No items found</p>';return;}
+  el.innerHTML=list.map(item=>{
+    const s=iStatus(item,_checkouts,_reservations), av=availQty(item,_checkouts);
     return `<div class="item-card" onclick="openItemModal('${item.id}')">
       <div class="ic-name">${item.name}</div>
-      <div class="ic-sub"><span class="loc-tag">${item.location||'—'}</span> &nbsp;<span style="font-size:11px;color:var(--text3)">${item.category||''}</span></div>
-      <div class="ic-footer">${badgeHtml(s)}<span class="qty-pill">${av} / ${item.qty}</span></div>
-      ${item.notes ? `<div class="ic-notes">${item.notes}</div>` : ''}
-      <div style="margin-top:8px;font-size:11px;color:var(--text3)">Tap to check out or reserve</div>
+      <div class="ic-sub"><span class="loc-tag">${item.location||'—'}</span>&nbsp;<span style="font-size:11px;color:var(--text3)">${item.category||''}</span></div>
+      <div class="ic-footer">${badgeHtml(s)}<span class="qty-pill">${av}/${item.qty}</span></div>
+      ${item.notes?`<div class="ic-notes">${item.notes}</div>`:''}
+      <div class="ic-tap">Tap to check out or reserve</div>
     </div>`;
   }).join('');
 }
 
 function populateSelects() {
-  const opts = _items.map(i => `<option value="${i.id}">${i.name} — ${i.location||'?'} (${availQty(i,_checkouts)} avail)</option>`).join('');
-  document.getElementById('co-item').innerHTML = opts || '<option>No items</option>';
-  document.getElementById('res-item').innerHTML = opts || '<option>No items</option>';
-  const openTxs = _checkouts;
-  document.getElementById('ci-tx').innerHTML = openTxs.length
-    ? openTxs.map(t => `<option value="${t.id}">${t.item_name} ×${t.qty} — ${t.person} (${t.created_at?.slice(0,10)||''})</option>`).join('')
-    : '<option value="">No items currently checked out</option>';
+  const opts=_items.map(i=>`<option value="${i.id}">${i.name} — ${i.location||'?'} (${availQty(i,_checkouts)} avail)</option>`).join('');
+  document.getElementById('co-item').innerHTML=opts||'<option>No items</option>';
+  document.getElementById('res-item').innerHTML=opts||'<option>No items</option>';
+  document.getElementById('co-person').value=session.name||'';
 }
 
 function renderCoActive() {
-  const el = document.getElementById('co-active-list');
-  if (!_checkouts.length) { el.innerHTML = '<p class="empty">Nothing currently checked out</p>'; return; }
-  el.innerHTML = `<table class="tbl"><thead><tr>
+  const el=document.getElementById('co-active-list');
+  if(!_checkouts.length){el.innerHTML='<p class="empty">Nothing currently checked out</p>';return;}
+  el.innerHTML=`<table class="tbl"><thead><tr>
     <th style="width:24%">Item</th><th style="width:8%">Qty</th><th style="width:16%">Person</th>
     <th style="width:14%">Date out</th><th style="width:14%">Due back</th><th style="width:24%">Note</th>
-  </tr></thead><tbody>` +
-    _checkouts.map(t => `<tr>
-      <td>${t.item_name}</td><td>${t.qty}</td><td>${t.person}</td>
+  </tr></thead><tbody>`+
+    _checkouts.map(t=>`<tr><td>${t.item_name}</td><td>${t.qty}</td><td>${t.person}</td>
       <td>${t.created_at?.slice(0,10)||''}</td><td>${t.due_back||'—'}</td>
-      <td style="color:var(--text2)">${t.note||'—'}</td>
-    </tr>`).join('') + '</tbody></table>';
+      <td style="color:var(--text2)">${t.note||'—'}</td></tr>`).join('')+
+  '</tbody></table>';
 }
 
 function renderResActive() {
-  const el = document.getElementById('res-active-list');
-  if (!_reservations.length) { el.innerHTML = '<p class="empty">No active reservations</p>'; return; }
-  el.innerHTML = `<table class="tbl"><thead><tr>
+  const el=document.getElementById('res-active-list');
+  if(!_reservations.length){el.innerHTML='<p class="empty">No active reservations</p>';return;}
+  el.innerHTML=`<table class="tbl"><thead><tr>
     <th style="width:22%">Item</th><th style="width:8%">Qty</th><th style="width:16%">Person</th>
     <th style="width:12%">Start</th><th style="width:12%">End</th><th style="width:16%">Note</th><th style="width:14%"></th>
-  </tr></thead><tbody>` +
-    _reservations.map(r => `<tr>
-      <td>${r.item_name}</td><td>${r.qty}</td><td>${r.person}</td>
+  </tr></thead><tbody>`+
+    _reservations.map(r=>`<tr><td>${r.item_name}</td><td>${r.qty}</td><td>${r.person}</td>
       <td>${r.start_date||'—'}</td><td>${r.end_date||'—'}</td>
       <td style="color:var(--text2)">${r.note||'—'}</td>
-      <td><button class="btn-sm btn-sm-red" onclick="cancelRes('${r.id}')">Cancel</button></td>
-    </tr>`).join('') + '</tbody></table>';
+      <td><button class="btn-sm btn-sm-red" onclick="cancelRes('${r.id}')">Cancel</button></td></tr>`).join('')+
+  '</tbody></table>';
+}
+
+function renderReturnList() {
+  const el=document.getElementById('return-list');
+  if(!_checkouts.length){el.innerHTML='<p class="empty">Nothing currently checked out</p>';return;}
+  el.innerHTML=`<table class="tbl"><thead><tr>
+    <th style="width:26%">Item</th><th style="width:8%">Qty</th><th style="width:18%">Checked out by</th>
+    <th style="width:14%">Date out</th><th style="width:14%">Due back</th><th style="width:20%"></th>
+  </tr></thead><tbody>`+
+    _checkouts.map(t=>{
+      const canReturn = session.role==='admin' || (session.role==='user' && session.name===t.person);
+      return `<tr><td>${t.item_name}</td><td>${t.qty}</td><td>${t.person}</td>
+        <td>${t.created_at?.slice(0,10)||''}</td><td>${t.due_back||'—'}</td>
+        <td>${canReturn
+          ? `<button class="btn-sm btn-sm-teal" onclick="openReturnModal('${t.id}')">Return</button>`
+          : `<span style="font-size:11px;color:var(--text3)">Not yours</span>`}
+        </td></tr>`;
+    }).join('')+
+  '</tbody></table>';
 }
 
 function renderManage() {
-  const el = document.getElementById('manage-body');
-  if (!_items.length) { el.innerHTML = '<tr><td colspan="6" class="empty">No items</td></tr>'; return; }
-  el.innerHTML = _items.map(item => `<tr>
+  const el=document.getElementById('manage-body');
+  if(!_items.length){el.innerHTML='<tr><td colspan="6" class="empty">No items</td></tr>';return;}
+  el.innerHTML=_items.map(item=>`<tr>
     <td><span style="font-weight:500">${item.name}</span><br>
         <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">${item.sku||'—'}</span></td>
     <td><span class="loc-tag">${item.location||'—'}</span></td>
@@ -612,342 +531,223 @@ function renderManage() {
       <button class="btn-sm btn-sm-teal" onclick="adjustQty('${item.id}',1)">+1</button>
       <button class="btn-sm btn-sm-teal" onclick="adjustQty('${item.id}',-1)">−1</button>
       <button class="btn-sm btn-sm-red"  onclick="removeItem('${item.id}','${item.name.replace(/'/g,"\\'")}')">Remove</button>
-    </td>
-  </tr>`).join('');
+    </td></tr>`).join('');
 }
 
 function renderLog() {
-  const q = (document.getElementById('log-srch').value || '').toLowerCase();
-  const list = _log.filter(l => !q || JSON.stringify(l).toLowerCase().includes(q));
-  const el = document.getElementById('log-panel');
-  if (!list.length) { el.innerHTML = '<p class="empty">No activity yet</p>'; return; }
-  el.innerHTML = list.map(l => `
-    <div class="log-row">
-      <div class="dot ${l.type==='return'?'dot-in':l.type==='reserve'?'dot-res':'dot-out'}"></div>
-      <div>
-        <span style="font-weight:500">${l.type==='return'?'Returned':l.type==='reserve'?'Reserved':'Checked out'}</span>
-        — ${l.item_name} ×${l.qty}
-        <span style="color:var(--text2)"> · ${l.person}</span>
-        ${l.note ? `<span style="color:var(--text2)"> · ${l.note}</span>` : ''}
-        <div class="log-meta">${l.created_at ? new Date(l.created_at).toLocaleString() : ''}</div>
-      </div>
-    </div>`).join('');
+  const q=(document.getElementById('log-srch').value||'').toLowerCase();
+  const list=_log.filter(l=>!q||JSON.stringify(l).toLowerCase().includes(q));
+  const el=document.getElementById('log-panel');
+  if(!list.length){el.innerHTML='<p class="empty">No activity yet</p>';return;}
+  el.innerHTML=list.map(l=>`<div class="log-row">
+    <div class="dot ${l.type==='return'?'dot-in':l.type==='reserve'?'dot-res':'dot-out'}"></div>
+    <div>
+      <span style="font-weight:500">${l.type==='return'?'Returned':l.type==='reserve'?'Reserved':'Checked out'}</span>
+      — ${l.item_name} ×${l.qty}
+      <span style="color:var(--text2)"> · ${l.person}</span>
+      ${l.note?`<span style="color:var(--text2)"> · ${l.note}</span>`:''}
+      <div class="log-meta">${l.created_at?new Date(l.created_at).toLocaleString():''}</div>
+    </div></div>`).join('');
 }
 
-// ─── Actions ───────────────────────────────────────────────────────
-async function doCheckout() {
-  if (!session.role) { openLogin(); return; }
-  const itemId = document.getElementById('co-item').value;
-  const qty    = parseInt(document.getElementById('co-qty').value) || 1;
-  const person = session.name;
-  const due    = document.getElementById('co-due').value;
-  const note   = document.getElementById('co-note').value.trim();
-  const item   = _items.find(i => i.id === itemId);
-  if (!item) return;
-  if (availQty(item, _checkouts) < qty) { toast('Not enough available'); return; }
-
-  const { error } = await sb.from('checkouts').insert({
-    item_id: itemId, item_name: item.name, qty, person, due_back: due||null, note: note||null, status: 'out'
-  });
-  if (error) { toast('Error: ' + error.message); return; }
-  await sb.from('activity_log').insert({ type:'checkout', item_id:itemId, item_name:item.name, qty, person, note:note||null });
-
-  document.getElementById('co-qty').value = 1;
-  document.getElementById('co-due').value = '';
-  document.getElementById('co-note').value = '';
-  await refresh();
-  toast(`Checked out ${qty}× ${item.name}`);
-}
-
-async function doReserve() {
-  if (!session.role) { openLogin(); return; }
-  const itemId = document.getElementById('res-item').value;
-  const qty    = parseInt(document.getElementById('res-qty').value) || 1;
-  const person = session.name;
-  const start  = document.getElementById('res-start').value;
-  const end    = document.getElementById('res-end').value;
-  const note   = document.getElementById('res-note').value.trim();
-  if (!start) { toast('Enter a start date'); return; }
-  const item = _items.find(i => i.id === itemId);
-  if (!item) return;
-
-  const { error } = await sb.from('reservations').insert({
-    item_id: itemId, item_name: item.name, qty, person, start_date: start, end_date: end||null, note: note||null, status: 'active'
-  });
-  if (error) { toast('Error: ' + error.message); return; }
-  await sb.from('activity_log').insert({ type:'reserve', item_id:itemId, item_name:item.name, qty, person, note:`${start}${end?'→'+end:''}` });
-
-  document.getElementById('res-qty').value = 1;
-  document.getElementById('res-person').value = '';
-  document.getElementById('res-start').value = '';
-  document.getElementById('res-end').value = '';
-  document.getElementById('res-note').value = '';
-  await refresh();
-  toast(`Reserved ${qty}× ${item.name}`);
-}
-
-async function doReturn() {
-  if (!session.role) { openLogin(); return; }
-  const txId = document.getElementById('ci-tx').value;
-  const note = document.getElementById('ci-note').value.trim();
-  const tx   = _checkouts.find(t => t.id === txId);
-  if (!tx) { toast('Select a checkout'); return; }
-
-  const { error } = await sb.from('checkouts').update({ status:'returned' }).eq('id', txId);
-  if (error) { toast('Error: ' + error.message); return; }
-  await sb.from('activity_log').insert({ type:'return', item_id:tx.item_id, item_name:tx.item_name, qty:tx.qty, person:tx.person, note:note||null });
-
-  document.getElementById('ci-note').value = '';
-  await refresh();
-  toast(`Returned ${tx.qty}× ${tx.item_name}`);
-}
-
-async function cancelRes(resId) {
-  if (session.role !== 'admin' && session.role !== 'user') return;
-  const { error } = await sb.from('reservations').update({ status:'cancelled' }).eq('id', resId);
-  if (error) { toast('Error: ' + error.message); return; }
-  await refresh();
-  toast('Reservation cancelled');
-}
-
-async function addItem() {
-  if (session.role !== 'admin') return;
-  const name = document.getElementById('m-name').value.trim();
-  if (!name) { toast('Name required'); return; }
-  const { error } = await sb.from('items').insert({
-    name,
-    category: document.getElementById('m-cat').value.trim() || 'General',
-    location: document.getElementById('m-loc').value.trim() || 'Unknown',
-    qty:  parseInt(document.getElementById('m-qty').value) || 0,
-    sku:  document.getElementById('m-sku').value.trim() || null,
-    notes:document.getElementById('m-notes').value.trim() || null,
-  });
-  if (error) { toast('Error: ' + error.message); return; }
-  ['m-name','m-cat','m-loc','m-sku','m-notes'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('m-qty').value = 1;
-  await refresh();
-  toast(`"${name}" added`);
-}
-
-async function adjustQty(id, delta) {
-  if (session.role !== 'admin') return;
-  const item = _items.find(i => i.id === id);
-  if (!item) return;
-  const newQty = Math.max(0, item.qty + delta);
-  await sb.from('items').update({ qty: newQty }).eq('id', id);
-  await refresh();
-}
-
-async function removeItem(id, name) {
-  if (session.role !== 'admin') return;
-  if (!confirm(`Remove "${name}" from the closet?`)) return;
-  await sb.from('items').delete().eq('id', id);
-  await refresh();
-  toast(`"${name}" removed`);
-}
-
-// ─── Item action modal ──────────────────────────────────────────────
-let _activeItemId = null;
-let _activeItemTab = 'checkout';
+// ── Item action modal ─────────────────────────────────────────────
+let _activeItemId=null, _activeImTab='co';
 
 function openItemModal(itemId) {
-  _activeItemId = itemId;
-  const item = _items.find(i => i.id === itemId);
-  if (!item) return;
-  const s = iStatus(item, _checkouts, _reservations);
-  const av = availQty(item, _checkouts);
-
-  document.getElementById('im-name').textContent = item.name;
-  document.getElementById('im-badge').innerHTML = badgeHtml(s);
-  document.getElementById('im-loc').textContent = item.location || '—';
-  document.getElementById('im-avail').textContent = `${av} of ${item.qty} available`;
-  document.getElementById('im-notes').textContent = item.notes || '';
-
-  document.getElementById('im-co-qty').value = 1;
-  document.getElementById('im-co-qty').max = av;
-  document.getElementById('im-co-due').value = '';
-  document.getElementById('im-co-note').value = '';
-  document.getElementById('im-res-qty').value = 1;
-  document.getElementById('im-res-start').value = new Date().toISOString().slice(0,10);
-  document.getElementById('im-res-end').value = '';
-  document.getElementById('im-res-note').value = '';
-
-  switchItemTab('checkout');
+  if(!session.role){ openLogin(()=>openItemModal(itemId)); return; }
+  _activeItemId=itemId;
+  const item=_items.find(i=>i.id===itemId); if(!item) return;
+  const s=iStatus(item,_checkouts,_reservations), av=availQty(item,_checkouts);
+  document.getElementById('im-name').textContent=item.name;
+  document.getElementById('im-badge').innerHTML=badgeHtml(s);
+  document.getElementById('im-loc').textContent=item.location||'—';
+  document.getElementById('im-avail').textContent=`${av} of ${item.qty} available`;
+  document.getElementById('im-notes').textContent=item.notes||'';
+  document.getElementById('im-co-qty').value=1; document.getElementById('im-co-qty').max=av;
+  document.getElementById('im-co-due').value=''; document.getElementById('im-co-note').value='';
+  document.getElementById('im-res-qty').value=1;
+  document.getElementById('im-res-start').value=new Date().toISOString().slice(0,10);
+  document.getElementById('im-res-end').value=''; document.getElementById('im-res-note').value='';
+  // admin assign field
+  const wrap=document.getElementById('im-res-for-wrap');
+  wrap.style.display=session.role==='admin'?'block':'none';
+  document.getElementById('im-res-for').value='';
+  switchImTab('co');
   document.getElementById('item-modal').classList.add('open');
 }
-
-function closeItemModal() {
-  document.getElementById('item-modal').classList.remove('open');
-  _activeItemId = null;
+function closeItemModal(){ document.getElementById('item-modal').classList.remove('open'); _activeItemId=null; }
+function switchImTab(tab){
+  _activeImTab=tab;
+  document.getElementById('imt-co').classList.toggle('on',tab==='co');
+  document.getElementById('imt-res').classList.toggle('on',tab==='res');
+  document.getElementById('ima-co').classList.toggle('on',tab==='co');
+  document.getElementById('ima-res').classList.toggle('on',tab==='res');
+  const btn=document.getElementById('im-submit-btn');
+  if(tab==='co'){btn.textContent='Check out';btn.className='btn btn-amber';}
+  else{btn.textContent='Reserve';btn.className='btn btn-blue';}
 }
-
-function switchItemTab(tab) {
-  _activeItemTab = tab;
-  document.getElementById('imt-checkout').classList.toggle('on', tab === 'checkout');
-  document.getElementById('imt-reserve').classList.toggle('on', tab === 'reserve');
-  document.getElementById('ima-checkout').classList.toggle('on', tab === 'checkout');
-  document.getElementById('ima-reserve').classList.toggle('on', tab === 'reserve');
-  const btn = document.getElementById('im-submit-btn');
-  if (tab === 'checkout') { btn.textContent = 'Check out'; btn.className = 'btn btn-amber'; }
-  else                    { btn.textContent = 'Reserve';   btn.className = 'btn btn-blue'; }
-}
-
-async function submitItemModal() {
-  if (!session.role) {
-    closeItemModal();
-    openLogin();
-    return;
-  }
-  const item = _items.find(i => i.id === _activeItemId);
-  if (!item) return;
-
-  if (_activeItemTab === 'checkout') {
-    const qty  = parseInt(document.getElementById('im-co-qty').value) || 1;
-    const due  = document.getElementById('im-co-due').value;
-    const note = document.getElementById('im-co-note').value.trim();
-    if (availQty(item, _checkouts) < qty) { toast('Not enough available'); return; }
-    const { error } = await sb.from('checkouts').insert({
-      item_id: item.id, item_name: item.name, qty, person: session.name, due_back: due||null, note: note||null, status: 'out'
-    });
-    if (error) { toast('Error: ' + error.message); return; }
-    await sb.from('activity_log').insert({ type:'checkout', item_id:item.id, item_name:item.name, qty, person:session.name, note:note||null });
-    closeItemModal();
-    await refresh();
-    toast(`Checked out ${qty}× ${item.name}`);
-
+async function submitItemModal(){
+  const item=_items.find(i=>i.id===_activeItemId); if(!item) return;
+  if(_activeImTab==='co'){
+    const qty=parseInt(document.getElementById('im-co-qty').value)||1;
+    const due=document.getElementById('im-co-due').value;
+    const note=document.getElementById('im-co-note').value.trim();
+    if(availQty(item,_checkouts)<qty){toast('Not enough available');return;}
+    const{error}=await sb.from('checkouts').insert({item_id:item.id,item_name:item.name,qty,person:session.name,due_back:due||null,note:note||null,status:'out'});
+    if(error){toast('Error: '+error.message);return;}
+    await sb.from('activity_log').insert({type:'checkout',item_id:item.id,item_name:item.name,qty,person:session.name,note:note||null});
+    closeItemModal(); await refresh(); toast(`Checked out ${qty}× ${item.name}`);
   } else {
-    const qty   = parseInt(document.getElementById('im-res-qty').value) || 1;
-    const start = document.getElementById('im-res-start').value;
-    const end   = document.getElementById('im-res-end').value;
-    const note  = document.getElementById('im-res-note').value.trim();
-    if (!start) { toast('Enter a start date'); return; }
-    const { error } = await sb.from('reservations').insert({
-      item_id: item.id, item_name: item.name, qty, person: session.name, start_date: start, end_date: end||null, note: note||null, status: 'active'
-    });
-    if (error) { toast('Error: ' + error.message); return; }
-    await sb.from('activity_log').insert({ type:'reserve', item_id:item.id, item_name:item.name, qty, person:session.name, note:`${start}${end?'→'+end:''}` });
-    closeItemModal();
-    await refresh();
-    toast(`Reserved ${qty}× ${item.name}`);
+    const qty=parseInt(document.getElementById('im-res-qty').value)||1;
+    const start=document.getElementById('im-res-start').value;
+    const end=document.getElementById('im-res-end').value;
+    const note=document.getElementById('im-res-note').value.trim();
+    // admin can assign to another person; users always get themselves
+    const forPerson = session.role==='admin'
+      ? (document.getElementById('im-res-for').value.trim()||session.name)
+      : session.name;
+    if(!start){toast('Enter a start date');return;}
+    const{error}=await sb.from('reservations').insert({item_id:item.id,item_name:item.name,qty,person:forPerson,start_date:start,end_date:end||null,note:note||null,status:'active'});
+    if(error){toast('Error: '+error.message);return;}
+    await sb.from('activity_log').insert({type:'reserve',item_id:item.id,item_name:item.name,qty,person:forPerson,note:`${start}${end?'→'+end:''}`});
+    closeItemModal(); await refresh(); toast(`Reserved ${qty}× ${item.name} for ${forPerson}`);
   }
 }
+document.getElementById('item-modal').addEventListener('click',function(e){if(e.target===this)closeItemModal();});
 
-// close modal on overlay click
-document.getElementById('item-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeItemModal();
-});
+// ── Return modal ──────────────────────────────────────────────────
+let _returnTxId=null;
+function openReturnModal(txId){
+  const tx=_checkouts.find(t=>t.id===txId); if(!tx) return;
+  if(session.role!=='admin' && session.name!==tx.person){toast('You can only return items you checked out');return;}
+  _returnTxId=txId;
+  document.getElementById('return-modal-sub').textContent=`Returning: ${tx.item_name} ×${tx.qty} (checked out by ${tx.person})`;
+  document.getElementById('ret-note').value='';
+  document.getElementById('return-err').textContent='';
+  document.getElementById('return-modal').classList.add('open');
+}
+function closeReturnModal(){ document.getElementById('return-modal').classList.remove('open'); _returnTxId=null; }
+async function confirmReturn(){
+  const tx=_checkouts.find(t=>t.id===_returnTxId); if(!tx) return;
+  const note=document.getElementById('ret-note').value.trim();
+  const{error}=await sb.from('checkouts').update({status:'returned'}).eq('id',_returnTxId);
+  if(error){document.getElementById('return-err').textContent='Error: '+error.message;return;}
+  await sb.from('activity_log').insert({type:'return',item_id:tx.item_id,item_name:tx.item_name,qty:tx.qty,person:tx.person,note:note||null});
+  closeReturnModal(); await refresh(); toast(`Returned ${tx.qty}× ${tx.item_name}`);
+}
+document.getElementById('return-modal').addEventListener('click',function(e){if(e.target===this)closeReturnModal();});
 
-// ─── Nav / tabs ─────────────────────────────────────────────────────
-function sw(name) {
-  const names = ['browse','checkout','reserve','checkin','manage','log'];
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('on', names[i]===name));
-  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+// ── Tab actions ───────────────────────────────────────────────────
+async function doCheckout(){
+  if(!session.role){openLogin();return;}
+  const itemId=document.getElementById('co-item').value;
+  const qty=parseInt(document.getElementById('co-qty').value)||1;
+  const due=document.getElementById('co-due').value;
+  const note=document.getElementById('co-note').value.trim();
+  const item=_items.find(i=>i.id===itemId); if(!item) return;
+  if(availQty(item,_checkouts)<qty){toast('Not enough available');return;}
+  const{error}=await sb.from('checkouts').insert({item_id:itemId,item_name:item.name,qty,person:session.name,due_back:due||null,note:note||null,status:'out'});
+  if(error){toast('Error: '+error.message);return;}
+  await sb.from('activity_log').insert({type:'checkout',item_id:itemId,item_name:item.name,qty,person:session.name,note:note||null});
+  document.getElementById('co-qty').value=1; document.getElementById('co-due').value=''; document.getElementById('co-note').value='';
+  await refresh(); toast(`Checked out ${qty}× ${item.name}`);
+}
+
+async function doReserve(){
+  if(!session.role){openLogin();return;}
+  const itemId=document.getElementById('res-item').value;
+  const qty=parseInt(document.getElementById('res-qty').value)||1;
+  const forPerson=document.getElementById('res-person').value.trim()||session.name;
+  const start=document.getElementById('res-start').value;
+  const end=document.getElementById('res-end').value;
+  const note=document.getElementById('res-note').value.trim();
+  if(!start){toast('Enter a start date');return;}
+  const item=_items.find(i=>i.id===itemId); if(!item) return;
+  const{error}=await sb.from('reservations').insert({item_id:itemId,item_name:item.name,qty,person:forPerson,start_date:start,end_date:end||null,note:note||null,status:'active'});
+  if(error){toast('Error: '+error.message);return;}
+  await sb.from('activity_log').insert({type:'reserve',item_id:itemId,item_name:item.name,qty,person:forPerson,note:`${start}${end?'→'+end:''}`});
+  document.getElementById('res-qty').value=1; document.getElementById('res-start').value=''; document.getElementById('res-end').value=''; document.getElementById('res-note').value='';
+  await refresh(); toast(`Reserved ${qty}× ${item.name} for ${forPerson}`);
+}
+
+async function cancelRes(resId){
+  const{error}=await sb.from('reservations').update({status:'cancelled'}).eq('id',resId);
+  if(error){toast('Error: '+error.message);return;}
+  await refresh(); toast('Reservation cancelled');
+}
+
+async function addItem(){
+  if(session.role!=='admin') return;
+  const name=document.getElementById('m-name').value.trim();
+  if(!name){toast('Name required');return;}
+  const{error}=await sb.from('items').insert({name,category:document.getElementById('m-cat').value.trim()||'General',location:document.getElementById('m-loc').value.trim()||'Unknown',qty:parseInt(document.getElementById('m-qty').value)||0,sku:document.getElementById('m-sku').value.trim()||null,notes:document.getElementById('m-notes').value.trim()||null});
+  if(error){toast('Error: '+error.message);return;}
+  ['m-name','m-cat','m-loc','m-sku','m-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('m-qty').value=1;
+  await refresh(); toast(`"${name}" added`);
+}
+
+async function adjustQty(id,delta){
+  if(session.role!=='admin') return;
+  const item=_items.find(i=>i.id===id); if(!item) return;
+  await sb.from('items').update({qty:Math.max(0,item.qty+delta)}).eq('id',id);
+  await refresh();
+}
+
+async function removeItem(id,name){
+  if(session.role!=='admin') return;
+  if(!confirm(`Remove "${name}"?`)) return;
+  await sb.from('items').delete().eq('id',id);
+  await refresh(); toast(`"${name}" removed`);
+}
+
+// ── Nav ───────────────────────────────────────────────────────────
+function sw(name){
+  const names=['browse','checkout','reserve','checkin','manage','log'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',names[i]===name));
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
   document.getElementById('sec-'+name).classList.add('on');
+  if(name==='checkin') renderReturnList();
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// ─── Boot ─────────────────────────────────────────────────────────
-updateNav();
-refreshTabAccess();
-document.getElementById('res-start').value = new Date().toISOString().slice(0,10);
-if (configured) refresh();
-else {
-  renderStats();
-  document.getElementById('browse-grid').innerHTML = '<p class="empty">Configure Supabase to load items.</p>';
-}
+// ── Boot ──────────────────────────────────────────────────────────
+updateNav(); refreshTabAccess(); updateReserveForField();
+document.getElementById('res-start').value=new Date().toISOString().slice(0,10);
+if(configured) refresh();
+else { renderStats(); document.getElementById('browse-grid').innerHTML='<p class="empty">Configure Supabase to load items.</p>'; }
 </script>
 
-<!-- ═══════════════════════════════════════════════ SETUP GUIDE -->
 <div class="page" style="padding-top:0">
   <details style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;font-size:13px;color:var(--text2)">
     <summary style="cursor:pointer;font-weight:500;color:var(--text);font-size:14px">Setup guide — click to expand</summary>
     <div style="margin-top:1rem;line-height:1.8">
-      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 1 — Create a Supabase project</strong><br>
-      Go to <a href="https://supabase.com" target="_blank" style="color:#185FA5">supabase.com</a>, sign up free, and create a new project. Wait for it to provision (~1 min).</p>
-
-      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 2 — Run this SQL to create your tables</strong><br>
-      In your Supabase dashboard → SQL Editor → New query, paste and run:</p>
+      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 1 — Create a Supabase project</strong><br>Go to <a href="https://supabase.com" target="_blank" style="color:#185FA5">supabase.com</a>, sign up free, and create a new project.</p>
+      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 2 — Run this SQL</strong><br>SQL Editor → New snippet → paste and run:</p>
       <pre style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem;overflow-x:auto;font-size:12px;font-family:var(--mono);margin-bottom:.75rem">create extension if not exists "uuid-ossp";
-
-create table items (
-  id uuid primary key default uuid_generate_v4(),
-  name text not null,
-  category text,
-  location text,
-  qty int default 1,
-  sku text,
-  notes text,
-  created_at timestamptz default now()
-);
-
-create table checkouts (
-  id uuid primary key default uuid_generate_v4(),
-  item_id uuid references items(id),
-  item_name text,
-  qty int default 1,
-  person text,
-  due_back date,
-  note text,
-  status text default 'out',
-  created_at timestamptz default now()
-);
-
-create table reservations (
-  id uuid primary key default uuid_generate_v4(),
-  item_id uuid references items(id),
-  item_name text,
-  qty int default 1,
-  person text,
-  start_date date,
-  end_date date,
-  note text,
-  status text default 'active',
-  created_at timestamptz default now()
-);
-
-create table activity_log (
-  id uuid primary key default uuid_generate_v4(),
-  type text,
-  item_id uuid,
-  item_name text,
-  qty int,
-  person text,
-  note text,
-  created_at timestamptz default now()
-);
-
--- Allow public read/write (the app uses PINs for access control)
-alter table items        enable row level security;
-alter table checkouts    enable row level security;
+create table items (id uuid primary key default uuid_generate_v4(), name text not null, category text, location text, qty int default 1, sku text, notes text, created_at timestamptz default now());
+create table checkouts (id uuid primary key default uuid_generate_v4(), item_id uuid references items(id), item_name text, qty int default 1, person text, due_back date, note text, status text default 'out', created_at timestamptz default now());
+create table reservations (id uuid primary key default uuid_generate_v4(), item_id uuid references items(id), item_name text, qty int default 1, person text, start_date date, end_date date, note text, status text default 'active', created_at timestamptz default now());
+create table activity_log (id uuid primary key default uuid_generate_v4(), type text, item_id uuid, item_name text, qty int, person text, note text, created_at timestamptz default now());
+alter table items enable row level security;
+alter table checkouts enable row level security;
 alter table reservations enable row level security;
 alter table activity_log enable row level security;
-
-create policy "public all" on items        for all using (true) with check (true);
-create policy "public all" on checkouts    for all using (true) with check (true);
+create policy "public all" on items for all using (true) with check (true);
+create policy "public all" on checkouts for all using (true) with check (true);
 create policy "public all" on reservations for all using (true) with check (true);
 create policy "public all" on activity_log for all using (true) with check (true);</pre>
-
-      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 3 — Add your credentials to index.html</strong><br>
-      In Supabase: Project Settings → API. Copy <em>Project URL</em> and <em>anon public</em> key. Paste them at the top of index.html replacing <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:4px">YOUR_SUPABASE_URL</code> and <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:4px">YOUR_SUPABASE_ANON_KEY</code>. Also change the PINs.</p>
-
-      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 4 — Publish to GitHub Pages</strong><br>
-      1. Create a free account at <a href="https://github.com" target="_blank" style="color:#185FA5">github.com</a><br>
-      2. New repository → name it <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:4px">storage-closet</code> → public<br>
-      3. Upload your <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:4px">index.html</code> file<br>
-      4. Settings → Pages → Source: <em>main branch</em> → Save<br>
-      5. Your URL will be <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:4px">https://yourusername.github.io/storage-closet</code></p>
-
+      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 3 — Add credentials</strong><br>Project URL and Publishable key → paste at top of index.html. Change the PINs.</p>
+      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 4 — GitHub Pages</strong><br>New repo → upload index.html → Settings → Pages → Deploy from branch → main → Save.</p>
       <p><strong style="color:var(--text)">Default PINs (change these!)</strong><br>
-      User PIN: <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:4px">0000</code> — can browse, check out, reserve, return<br>
-      Admin PIN: <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:4px">1234</code> — can also add/remove items and adjust quantities</p>
+      User PIN: <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:4px">0000</code><br>
+      Admin PIN: <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:4px">1234</code></p>
     </div>
   </details>
 </div>
-
 </body>
 </html>
