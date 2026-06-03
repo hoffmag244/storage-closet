@@ -121,10 +121,12 @@
 
 <script>
   // ── CONFIG ──
-   const SUPABASE_URL      = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
+
+  const SUPABASE_URL      = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
   const DEFAULT_PIN       = '0000';  // Every new user starts with this PIN
   const ADMIN_BOOTSTRAP_PIN = '9999'; // One-time PIN to create the first admin account
+  const SUPER_ADMIN_NAME  = 'Gretchen'; // Only this account sees sign-in logs
 </script>
 
 <nav>
@@ -1128,8 +1130,10 @@ async function importFromExcel(event){
 
 // ── Nav ───────────────────────────────────────────────────────────
 function sw(name){
-  const names=['browse','checkout','reserve','checkin','manage','users','log','signin'];
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',names[i]===name));
+  document.querySelectorAll('.tab').forEach(t => {
+    const onclick = t.getAttribute('onclick');
+    t.classList.toggle('on', onclick === `sw('${name}')`);
+  });
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
   document.getElementById('sec-'+name).classList.add('on');
   if(name==='checkin') renderReturnList();
@@ -1143,10 +1147,16 @@ function toast(msg){
 
 // ── Boot ──────────────────────────────────────────────────────────
 document.getElementById('res-start').value=new Date().toISOString().slice(0,10);
-updateNav(); refreshTabAccess();
+// Hide all restricted tabs immediately on load
+['tab-checkout','tab-reserve','tab-checkin'].forEach(id=>document.getElementById(id).disabled=true);
+['tab-manage','tab-users','tab-log','tab-signin'].forEach(id=>document.getElementById(id).style.display='none');
 if(configured){
-  refresh().then(()=>{ updateNav(); refreshTabAccess(); });
-  renderAnnouncements();
+  refresh().then(()=>{
+    updateNav();
+    refreshTabAccess();
+    updateReserveForField();
+    renderAnnouncements();
+  });
 } else {
   document.getElementById('browse-grid').innerHTML='<p class="empty">Configure Supabase credentials at the top of index.html.</p>';
 }
