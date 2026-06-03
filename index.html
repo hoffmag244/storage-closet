@@ -72,7 +72,8 @@
 
   /* GRID */
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 1rem; }
-  .item-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; }
+  .item-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+  .item-card:hover { border-color: var(--border2); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
   .ic-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
   .ic-sub { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
   .ic-footer { display: flex; justify-content: space-between; align-items: center; }
@@ -129,6 +130,20 @@
   .dot-out { background: #BA7517; } .dot-in { background: #1D9E75; } .dot-res { background: #185FA5; }
   .log-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
 
+  /* ITEM ACTION MODAL */
+  .item-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 2rem 1rem; }
+  .item-modal-overlay.open { display: flex; }
+  .item-modal { background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius-lg); width: 100%; max-width: 460px; overflow: hidden; margin: auto; }
+  .item-modal-header { padding: 1.25rem 1.25rem 1rem; border-bottom: 0.5px solid var(--border); }
+  .item-modal-name { font-size: 17px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .item-modal-meta { font-size: 12px; color: var(--text2); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .item-modal-tabs { display: flex; border-bottom: 0.5px solid var(--border); }
+  .item-modal-tab { flex: 1; padding: 10px; font-size: 13px; font-weight: 500; background: none; border: none; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .item-modal-tab.on { color: var(--text); border-bottom-color: var(--text); }
+  .item-modal-body { padding: 1.25rem; }
+  .item-modal-action { display: none; } .item-modal-action.on { display: block; }
+  .item-modal-footer { display: flex; gap: 8px; justify-content: flex-end; padding: 0 1.25rem 1.25rem; }
+
   /* MODAL */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
@@ -162,14 +177,14 @@
   // ┌─────────────────────────────────────────────────────────────┐
   // │  STEP 1 — Paste your Supabase credentials here             │
   // └─────────────────────────────────────────────────────────────┘
-  const SUPABASE_URL = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
   // ┌─────────────────────────────────────────────────────────────┐
   // │  STEP 2 — Set your PINs                                    │
   // └─────────────────────────────────────────────────────────────┘
   const ADMIN_PIN = '1234';   // Change this! Manages items
-  const USER_PIN  = '2026';   // Change this! Check out / reserve
+  const USER_PIN  = '0000';   // Change this! Check out / reserve
 </script>
 
 <!-- ═══════════════════════════════════════════════ NAV -->
@@ -300,6 +315,55 @@
   <div id="sec-log" class="sec">
     <div class="topbar"><input type="text" id="log-srch" placeholder="Filter log…" oninput="renderLog()"></div>
     <div class="panel" id="log-panel"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ ITEM ACTION MODAL -->
+<div class="item-modal-overlay" id="item-modal">
+  <div class="item-modal">
+    <div class="item-modal-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="item-modal-name" id="im-name"></div>
+          <div class="item-modal-meta">
+            <span id="im-badge"></span>
+            <span class="loc-tag" id="im-loc"></span>
+            <span id="im-avail" style="color:var(--text2)"></span>
+          </div>
+        </div>
+        <button class="btn-link" onclick="closeItemModal()" style="font-size:18px;padding:2px 8px">✕</button>
+      </div>
+      <div id="im-notes" style="font-size:12px;color:var(--text3);margin-top:8px"></div>
+    </div>
+    <div class="item-modal-tabs">
+      <button class="item-modal-tab on" id="imt-checkout" onclick="switchItemTab('checkout')">Check out</button>
+      <button class="item-modal-tab" id="imt-reserve" onclick="switchItemTab('reserve')">Reserve</button>
+    </div>
+    <div class="item-modal-body">
+      <!-- CHECK OUT -->
+      <div class="item-modal-action on" id="ima-checkout">
+        <div class="frow" style="margin-bottom:10px">
+          <div class="field"><label>Quantity</label><input type="number" id="im-co-qty" value="1" min="1"></div>
+          <div class="field"><label>Due back (optional)</label><input type="date" id="im-co-due"></div>
+        </div>
+        <div class="field" style="margin-bottom:10px"><label>Note (optional)</label><input type="text" id="im-co-note" placeholder="Purpose, project…"></div>
+      </div>
+      <!-- RESERVE -->
+      <div class="item-modal-action" id="ima-reserve">
+        <div class="frow" style="margin-bottom:10px">
+          <div class="field"><label>Quantity</label><input type="number" id="im-res-qty" value="1" min="1"></div>
+          <div class="field"><label>Start date</label><input type="date" id="im-res-start"></div>
+        </div>
+        <div class="frow" style="margin-bottom:10px">
+          <div class="field"><label>End date (optional)</label><input type="date" id="im-res-end"></div>
+          <div class="field"><label>Note (optional)</label><input type="text" id="im-res-note" placeholder="Event, project…"></div>
+        </div>
+      </div>
+    </div>
+    <div class="item-modal-footer">
+      <button class="btn btn-ghost" onclick="closeItemModal()">Cancel</button>
+      <button class="btn btn-amber" id="im-submit-btn" onclick="submitItemModal()">Check out</button>
+    </div>
   </div>
 </div>
 
@@ -485,11 +549,12 @@ function renderBrowse() {
   el.innerHTML = list.map(item => {
     const s = iStatus(item, _checkouts, _reservations);
     const av = availQty(item, _checkouts);
-    return `<div class="item-card">
+    return `<div class="item-card" onclick="openItemModal('${item.id}')">
       <div class="ic-name">${item.name}</div>
       <div class="ic-sub"><span class="loc-tag">${item.location||'—'}</span> &nbsp;<span style="font-size:11px;color:var(--text3)">${item.category||''}</span></div>
       <div class="ic-footer">${badgeHtml(s)}<span class="qty-pill">${av} / ${item.qty}</span></div>
       ${item.notes ? `<div class="ic-notes">${item.notes}</div>` : ''}
+      <div style="margin-top:8px;font-size:11px;color:var(--text3)">Tap to check out or reserve</div>
     </div>`;
   }).join('');
 }
@@ -680,6 +745,97 @@ async function removeItem(id, name) {
   await refresh();
   toast(`"${name}" removed`);
 }
+
+// ─── Item action modal ──────────────────────────────────────────────
+let _activeItemId = null;
+let _activeItemTab = 'checkout';
+
+function openItemModal(itemId) {
+  _activeItemId = itemId;
+  const item = _items.find(i => i.id === itemId);
+  if (!item) return;
+  const s = iStatus(item, _checkouts, _reservations);
+  const av = availQty(item, _checkouts);
+
+  document.getElementById('im-name').textContent = item.name;
+  document.getElementById('im-badge').innerHTML = badgeHtml(s);
+  document.getElementById('im-loc').textContent = item.location || '—';
+  document.getElementById('im-avail').textContent = `${av} of ${item.qty} available`;
+  document.getElementById('im-notes').textContent = item.notes || '';
+
+  document.getElementById('im-co-qty').value = 1;
+  document.getElementById('im-co-qty').max = av;
+  document.getElementById('im-co-due').value = '';
+  document.getElementById('im-co-note').value = '';
+  document.getElementById('im-res-qty').value = 1;
+  document.getElementById('im-res-start').value = new Date().toISOString().slice(0,10);
+  document.getElementById('im-res-end').value = '';
+  document.getElementById('im-res-note').value = '';
+
+  switchItemTab('checkout');
+  document.getElementById('item-modal').classList.add('open');
+}
+
+function closeItemModal() {
+  document.getElementById('item-modal').classList.remove('open');
+  _activeItemId = null;
+}
+
+function switchItemTab(tab) {
+  _activeItemTab = tab;
+  document.getElementById('imt-checkout').classList.toggle('on', tab === 'checkout');
+  document.getElementById('imt-reserve').classList.toggle('on', tab === 'reserve');
+  document.getElementById('ima-checkout').classList.toggle('on', tab === 'checkout');
+  document.getElementById('ima-reserve').classList.toggle('on', tab === 'reserve');
+  const btn = document.getElementById('im-submit-btn');
+  if (tab === 'checkout') { btn.textContent = 'Check out'; btn.className = 'btn btn-amber'; }
+  else                    { btn.textContent = 'Reserve';   btn.className = 'btn btn-blue'; }
+}
+
+async function submitItemModal() {
+  if (!session.role) {
+    closeItemModal();
+    openLogin();
+    return;
+  }
+  const item = _items.find(i => i.id === _activeItemId);
+  if (!item) return;
+
+  if (_activeItemTab === 'checkout') {
+    const qty  = parseInt(document.getElementById('im-co-qty').value) || 1;
+    const due  = document.getElementById('im-co-due').value;
+    const note = document.getElementById('im-co-note').value.trim();
+    if (availQty(item, _checkouts) < qty) { toast('Not enough available'); return; }
+    const { error } = await sb.from('checkouts').insert({
+      item_id: item.id, item_name: item.name, qty, person: session.name, due_back: due||null, note: note||null, status: 'out'
+    });
+    if (error) { toast('Error: ' + error.message); return; }
+    await sb.from('activity_log').insert({ type:'checkout', item_id:item.id, item_name:item.name, qty, person:session.name, note:note||null });
+    closeItemModal();
+    await refresh();
+    toast(`Checked out ${qty}× ${item.name}`);
+
+  } else {
+    const qty   = parseInt(document.getElementById('im-res-qty').value) || 1;
+    const start = document.getElementById('im-res-start').value;
+    const end   = document.getElementById('im-res-end').value;
+    const note  = document.getElementById('im-res-note').value.trim();
+    if (!start) { toast('Enter a start date'); return; }
+    const { error } = await sb.from('reservations').insert({
+      item_id: item.id, item_name: item.name, qty, person: session.name, start_date: start, end_date: end||null, note: note||null, status: 'active'
+    });
+    if (error) { toast('Error: ' + error.message); return; }
+    await sb.from('activity_log').insert({ type:'reserve', item_id:item.id, item_name:item.name, qty, person:session.name, note:`${start}${end?'→'+end:''}` });
+    closeItemModal();
+    await refresh();
+    toast(`Reserved ${qty}× ${item.name}`);
+  }
+}
+
+// close modal on overlay click
+document.getElementById('item-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeItemModal();
+});
 
 // ─── Nav / tabs ─────────────────────────────────────────────────────
 function sw(name) {
