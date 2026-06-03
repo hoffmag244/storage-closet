@@ -232,7 +232,11 @@
       <div class="panel-title">Add item to closet</div>
       <div class="frow c3">
         <div class="field"><label>Name</label><input type="text" id="m-name" placeholder="Extension cord 25ft"></div>
-        <div class="field"><label>Category</label><input type="text" id="m-cat" placeholder="Electrical"></div>
+        <div class="field">
+          <label>Category</label>
+          <select id="m-cat" onchange="handleCatSelect()"><option value="">— select —</option></select>
+          <input type="text" id="m-cat-new" placeholder="New category name…" style="display:none;margin-top:6px">
+        </div>
         <div class="field"><label>Location / bin</label><input type="text" id="m-loc" placeholder="Shelf A3"></div>
       </div>
       <div class="frow c3">
@@ -447,7 +451,7 @@ function badgeHtml(s) {
 
 async function refresh() {
   [_items,_checkouts,_reservations,_log] = await Promise.all([loadItems(),loadCheckouts(),loadReservations(),loadLog()]);
-  renderStats(); renderBrowse(); populateSelects(); renderCoActive(); renderResActive(); renderReturnList(); renderManage(); renderLog();
+  renderStats(); renderBrowse(); populateSelects(); populateCatDropdown(); renderCoActive(); renderResActive(); renderReturnList(); renderManage(); renderLog();
 }
 
 // ── Render ────────────────────────────────────────────────────────
@@ -698,19 +702,49 @@ async function doReserve(){
 }
 
 async function cancelRes(resId){
+  const res=_reservations.find(r=>r.id===resId);
+  if(!res){toast('Reservation not found');return;}
+  if(session.role!=='admin' && session.name!==res.person){toast('You can only cancel your own reservations');return;}
   const{error}=await sb.from('reservations').update({status:'cancelled'}).eq('id',resId);
   if(error){toast('Error: '+error.message);return;}
   await refresh(); toast('Reservation cancelled');
+}
+
+// ── Category dropdown ─────────────────────────────────────────────
+function populateCatDropdown() {
+  const cats = [...new Set(_items.map(i => i.category).filter(Boolean))].sort();
+  const sel = document.getElementById('m-cat');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— select —</option>' +
+    cats.map(c => `<option value="${c}"${c===prev?' selected':''}>${c}</option>`).join('') +
+    '<option value="__new__">+ Add new category…</option>';
+}
+function handleCatSelect() {
+  const sel = document.getElementById('m-cat');
+  const newInput = document.getElementById('m-cat-new');
+  if (sel.value === '__new__') {
+    newInput.style.display = 'block';
+    newInput.focus();
+  } else {
+    newInput.style.display = 'none';
+    newInput.value = '';
+  }
 }
 
 async function addItem(){
   if(session.role!=='admin') return;
   const name=document.getElementById('m-name').value.trim();
   if(!name){toast('Name required');return;}
-  const{error}=await sb.from('items').insert({name,category:document.getElementById('m-cat').value.trim()||'General',location:document.getElementById('m-loc').value.trim()||'Unknown',qty:parseInt(document.getElementById('m-qty').value)||0,sku:document.getElementById('m-sku').value.trim()||null,notes:document.getElementById('m-notes').value.trim()||null});
+  const catSel = document.getElementById('m-cat').value;
+  const catNew = document.getElementById('m-cat-new').value.trim();
+  const category = catSel === '__new__' ? (catNew || 'General') : (catSel || 'General');
+  const{error}=await sb.from('items').insert({name,category,location:document.getElementById('m-loc').value.trim()||'Unknown',qty:parseInt(document.getElementById('m-qty').value)||0,sku:document.getElementById('m-sku').value.trim()||null,notes:document.getElementById('m-notes').value.trim()||null});
   if(error){toast('Error: '+error.message);return;}
-  ['m-name','m-cat','m-loc','m-sku','m-notes'].forEach(id=>document.getElementById(id).value='');
+  ['m-name','m-loc','m-sku','m-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('m-qty').value=1;
+  document.getElementById('m-cat').value='';
+  document.getElementById('m-cat-new').value='';
+  document.getElementById('m-cat-new').style.display='none';
   await refresh(); toast(`"${name}" added`);
 }
 
