@@ -116,11 +116,8 @@
   .admin-post-bar input{flex:1;max-width:520px;}
   @media(max-width:600px){.frow.c3,.frow.c4{grid-template-columns:1fr 1fr;}.stats{grid-template-columns:1fr 1fr 1fr;}}
 </style>
-</head>
-<body>
-
 <script>
-  // ── CONFIG ──
+ // ── CONFIG ──
 
   const SUPABASE_URL      = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
@@ -1147,9 +1144,10 @@ function toast(msg){
 
 // ── Boot ──────────────────────────────────────────────────────────
 document.getElementById('res-start').value=new Date().toISOString().slice(0,10);
-// Hide all restricted tabs immediately on load
+// Always wire up nav and hide restricted tabs immediately
 ['tab-checkout','tab-reserve','tab-checkin'].forEach(id=>document.getElementById(id).disabled=true);
 ['tab-manage','tab-users','tab-log','tab-signin'].forEach(id=>document.getElementById(id).style.display='none');
+updateNav();
 if(configured){
   refresh().then(()=>{
     updateNav();
