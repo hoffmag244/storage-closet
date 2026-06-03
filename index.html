@@ -176,7 +176,11 @@
     <div class="panel">
       <div class="panel-title">Check out item</div>
       <div class="frow">
-        <div class="field"><label>Item</label><select id="co-item"></select></div>
+        <div class="field">
+          <label>Item</label>
+          <input type="text" id="co-item-input" placeholder="Start typing item name…" autocomplete="off" list="co-item-list" oninput="coItemInput()" onkeydown="coItemKeydown(event)">
+          <datalist id="co-item-list"></datalist>
+        </div>
         <div class="field"><label>Quantity</label><input type="number" id="co-qty" value="1" min="1"></div>
       </div>
       <div class="frow">
@@ -196,14 +200,18 @@
     <div class="panel">
       <div class="panel-title">Reserve an item</div>
       <div class="frow">
-        <div class="field"><label>Item</label><select id="res-item"></select></div>
+        <div class="field">
+          <label>Item</label>
+          <input type="text" id="res-item-input" placeholder="Start typing item name…" autocomplete="off" list="res-item-list" oninput="resItemInput()" onkeydown="resItemKeydown(event)">
+          <datalist id="res-item-list"></datalist>
+        </div>
         <div class="field"><label>Quantity</label><input type="number" id="res-qty" value="1" min="1"></div>
       </div>
       <div class="frow c3">
         <div class="field">
           <label>Reserved for <span id="res-for-label" style="color:var(--text3)">(you)</span></label>
-          <select id="res-person-select" style="display:none"></select>
-          <input type="text" id="res-person-input" placeholder="Your name" readonly>
+          <input type="text" id="res-person-input" placeholder="Your name" autocomplete="off" list="res-person-list" readonly>
+          <datalist id="res-person-list"></datalist>
         </div>
         <div class="field"><label>Start date</label><input type="date" id="res-start"></div>
         <div class="field"><label>End date</label><input type="date" id="res-end"></div>
@@ -584,16 +592,19 @@ function refreshTabAccess() {
 }
 
 function updateReserveForField() {
-  const admin = isAdmin(), staff = isAnyStaff();
+  const staff = isAnyStaff();
   document.getElementById('res-for-label').textContent = staff ? '(assign to anyone)' : '(you)';
-  const sel = document.getElementById('res-person-select');
   const inp = document.getElementById('res-person-input');
+  const list = document.getElementById('res-person-list');
   if (staff) {
-    sel.style.display = ''; inp.style.display = 'none';
-    sel.innerHTML = _users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+    inp.readOnly = false;
+    inp.placeholder = 'Start typing a name…';
+    inp.value = '';
+    list.innerHTML = _users.map(u => `<option value="${u.name}">${u.name} (${roleLabel(u.role)})</option>`).join('');
   } else {
-    sel.style.display = 'none'; inp.style.display = '';
+    inp.readOnly = true;
     inp.value = session.name || '';
+    list.innerHTML = '';
   }
   const wrap = document.getElementById('im-res-for-wrap');
   if (wrap) {
@@ -693,9 +704,9 @@ function renderBrowse() {
 }
 
 function populateSelects() {
-  const opts=_items.map(i=>`<option value="${i.id}">${i.name} — ${i.location||'?'} (${availQty(i,_checkouts)} avail)</option>`).join('');
-  document.getElementById('co-item').innerHTML=opts||'<option>No items</option>';
-  document.getElementById('res-item').innerHTML=opts||'<option>No items</option>';
+  const itemOpts = _items.map(i => `<option value="${i.name}" data-id="${i.id}">${i.name} — ${i.location||'?'} (${availQty(i,_checkouts)} avail)</option>`).join('');
+  document.getElementById('co-item-list').innerHTML = itemOpts;
+  document.getElementById('res-item-list').innerHTML = itemOpts;
 }
 
 function populateCatDropdown() {
@@ -928,6 +939,35 @@ async function confirmReturn(){
 }
 document.getElementById('return-modal').addEventListener('click',function(e){if(e.target===this)closeReturnModal();});
 
+// ── Item autocomplete helpers ─────────────────────────────────────
+function getItemByName(name) {
+  return _items.find(i => i.name.toLowerCase() === name.toLowerCase());
+}
+function coItemInput() {
+  const val = document.getElementById('co-item-input').value.trim().toLowerCase();
+  if (_items.some(i => i.name.toLowerCase() === val))
+    setTimeout(() => document.getElementById('co-qty').focus(), 80);
+}
+function coItemKeydown(e) {
+  if (e.key === 'Tab') {
+    const val = document.getElementById('co-item-input').value.trim().toLowerCase();
+    const match = _items.find(i => i.name.toLowerCase().startsWith(val));
+    if (match) { e.preventDefault(); document.getElementById('co-item-input').value = match.name; document.getElementById('co-qty').focus(); }
+  }
+}
+function resItemInput() {
+  const val = document.getElementById('res-item-input').value.trim().toLowerCase();
+  if (_items.some(i => i.name.toLowerCase() === val))
+    setTimeout(() => document.getElementById('res-qty').focus(), 80);
+}
+function resItemKeydown(e) {
+  if (e.key === 'Tab') {
+    const val = document.getElementById('res-item-input').value.trim().toLowerCase();
+    const match = _items.find(i => i.name.toLowerCase().startsWith(val));
+    if (match) { e.preventDefault(); document.getElementById('res-item-input').value = match.name; document.getElementById('res-qty').focus(); }
+  }
+}
+
 // ── Date conflict check ───────────────────────────────────────────
 function checkDateConflict(itemId, dueBack) {
   if (!dueBack) return null;
@@ -959,23 +999,18 @@ function checkReservationOverlap(itemId, newStart, newEnd, excludeResId) {
 // ── Actions ───────────────────────────────────────────────────────
 async function doCheckout(){
   if(!session.role){openLogin();return;}
-  const itemId=document.getElementById('co-item').value;
+  const itemName=document.getElementById('co-item-input').value.trim();
   const qty=parseInt(document.getElementById('co-qty').value)||1;
   const due=document.getElementById('co-due').value;
   const note=document.getElementById('co-note').value.trim();
-  const item=_items.find(i=>i.id===itemId); if(!item) return;
+  const item=getItemByName(itemName);
+  if(!item){toast('Item not found — check the name');return;}
   if(availQty(item,_checkouts)<qty){toast('Not enough available');return;}
-  // Date conflict check
-  if (due) {
-    const conflict = checkDateConflict(itemId, due);
-    if (conflict) {
-      toast(`⚠️ Due date conflicts with a reservation by ${conflict.person} starting ${conflict.start_date}. Please change the return date.`);
-      return;
-    }
-  }
-  const{error}=await sb.from('checkouts').insert({item_id:itemId,item_name:item.name,qty,person:session.name,due_back:due||null,note:note||null,status:'out'});
+  if(due){const conflict=checkDateConflict(item.id,due);if(conflict){toast(`⚠️ Due date conflicts with a reservation by ${conflict.person} starting ${conflict.start_date}. Please change the return date.`);return;}}
+  const{error}=await sb.from('checkouts').insert({item_id:item.id,item_name:item.name,qty,person:session.name,due_back:due||null,note:note||null,status:'out'});
   if(error){toast('Error: '+error.message);return;}
-  await sb.from('activity_log').insert({type:'checkout',item_id:itemId,item_name:item.name,qty,person:session.name,note:note||null});
+  await sb.from('activity_log').insert({type:'checkout',item_id:item.id,item_name:item.name,qty,person:session.name,note:note||null});
+  document.getElementById('co-item-input').value='';
   document.getElementById('co-qty').value=1; document.getElementById('co-due').value=''; document.getElementById('co-note').value='';
   await refresh(); toast(`Checked out ${qty}× ${item.name}`);
 }
@@ -997,19 +1032,22 @@ async function checkoutFromReservation(resId) {
 
 async function doReserve(){
   if(!session.role){openLogin();return;}
-  const itemId=document.getElementById('res-item').value;
+  const itemName=document.getElementById('res-item-input').value.trim();
   const qty=parseInt(document.getElementById('res-qty').value)||1;
-  const forPerson=isAnyStaff()?(document.getElementById('res-person-select').value||session.name):session.name;
+  const forPerson=document.getElementById('res-person-input').value.trim()||session.name;
   const start=document.getElementById('res-start').value;
   const end=document.getElementById('res-end').value;
   const note=document.getElementById('res-note').value.trim();
+  const item=getItemByName(itemName);
+  if(!item){toast('Item not found — check the name');return;}
   if(!start){toast('Enter a start date');return;}
-  const item=_items.find(i=>i.id===itemId); if(!item) return;
-  const overlap = checkReservationOverlap(itemId, start, end||null);
-  if (overlap) { toast(`⚠️ Dates overlap with a reservation by ${overlap.person} (${overlap.start_date}${overlap.end_date?'→'+overlap.end_date:''}). Please choose different dates.`); return; }
-  const{error}=await sb.from('reservations').insert({item_id:itemId,item_name:item.name,qty,person:forPerson,start_date:start,end_date:end||null,note:note||null,status:'active'});
+  if(!forPerson){toast('Enter a name to reserve for');return;}
+  const overlap=checkReservationOverlap(item.id,start,end||null);
+  if(overlap){toast(`⚠️ Dates overlap with a reservation by ${overlap.person} (${overlap.start_date}${overlap.end_date?'→'+overlap.end_date:''}). Please choose different dates.`);return;}
+  const{error}=await sb.from('reservations').insert({item_id:item.id,item_name:item.name,qty,person:forPerson,start_date:start,end_date:end||null,note:note||null,status:'active'});
   if(error){toast('Error: '+error.message);return;}
-  await sb.from('activity_log').insert({type:'reserve',item_id:itemId,item_name:item.name,qty,person:forPerson,note:`${start}${end?'→'+end:''}`});
+  await sb.from('activity_log').insert({type:'reserve',item_id:item.id,item_name:item.name,qty,person:forPerson,note:`${start}${end?'→'+end:''}`});
+  document.getElementById('res-item-input').value='';
   document.getElementById('res-qty').value=1; document.getElementById('res-start').value=''; document.getElementById('res-end').value=''; document.getElementById('res-note').value='';
   await refresh(); toast(`Reserved ${qty}× ${item.name} for ${forPerson}`);
 }
