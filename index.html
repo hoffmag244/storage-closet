@@ -378,7 +378,7 @@
     <div class="modal-sub">Type your name and enter your PIN.</div>
     <div class="field" style="margin-bottom:10px">
       <label>Your name</label>
-      <input type="text" id="login-name" placeholder="Start typing your name…" autocomplete="off" list="login-name-list" oninput="loginNameInput()">
+      <input type="text" id="login-name" placeholder="Start typing your name…" autocomplete="off" list="login-name-list" oninput="loginNameInput()" onkeydown="loginNameKeydown(event)">
       <datalist id="login-name-list"></datalist>
     </div>
     <div class="field">
@@ -469,10 +469,24 @@ function openLogin(onSuccess) {
   setTimeout(() => document.getElementById('login-name').focus(), 80);
 }
 function loginNameInput() {
-  // Auto-advance to PIN field once a valid name is fully typed/selected
-  const val = document.getElementById('login-name').value.trim();
-  if (_users.some(u => u.name.toLowerCase() === val.toLowerCase())) {
+  const val = document.getElementById('login-name').value.trim().toLowerCase();
+  if (!val) return;
+  const match = _users.find(u => u.name.toLowerCase().startsWith(val));
+  if (match && match.name.toLowerCase() === val) {
     setTimeout(() => document.getElementById('login-pin').focus(), 80);
+  }
+}
+
+function loginNameKeydown(e) {
+  if (e.key === 'Tab') {
+    const val = document.getElementById('login-name').value.trim().toLowerCase();
+    if (!val) return;
+    const match = _users.find(u => u.name.toLowerCase().startsWith(val));
+    if (match) {
+      e.preventDefault();
+      document.getElementById('login-name').value = match.name;
+      document.getElementById('login-pin').focus();
+    }
   }
 }
 function closeLogin() { document.getElementById('login-modal').classList.remove('open'); }
@@ -838,6 +852,8 @@ async function submitItemModal(){
     const note=document.getElementById('im-res-note').value.trim();
     const forPerson=isAnyStaff()?(document.getElementById('im-res-for-select').value||session.name):session.name;
     if(!start){toast('Enter a start date');return;}
+    const overlap=checkReservationOverlap(item.id,start,end||null);
+    if(overlap){toast(`⚠️ Dates overlap with a reservation by ${overlap.person} (${overlap.start_date}${overlap.end_date?'→'+overlap.end_date:''}). Please choose different dates.`);return;}
     const{error}=await sb.from('reservations').insert({item_id:item.id,item_name:item.name,qty,person:forPerson,start_date:start,end_date:end||null,note:note||null,status:'active'});
     if(error){toast('Error: '+error.message);return;}
     await sb.from('activity_log').insert({type:'reserve',item_id:item.id,item_name:item.name,qty,person:forPerson,note:`${start}${end?'→'+end:''}`});
@@ -869,14 +885,28 @@ document.getElementById('return-modal').addEventListener('click',function(e){if(
 
 // ── Date conflict check ───────────────────────────────────────────
 function checkDateConflict(itemId, dueBack) {
-  if (!dueBack) return null; // no due date = no conflict to check
+  if (!dueBack) return null;
   const due = new Date(dueBack);
   const conflicts = _reservations.filter(r => {
     if (r.item_id !== itemId) return false;
     if (!r.start_date) return false;
     const start = new Date(r.start_date);
-    // conflict if due date is on or after reservation start
     return due >= start;
+  });
+  return conflicts.length ? conflicts[0] : null;
+}
+
+function checkReservationOverlap(itemId, newStart, newEnd, excludeResId) {
+  if (!newStart) return null;
+  const s1 = new Date(newStart);
+  const e1 = newEnd ? new Date(newEnd) : s1; // single day if no end
+  const conflicts = _reservations.filter(r => {
+    if (r.item_id !== itemId) return false;
+    if (excludeResId && r.id === excludeResId) return false;
+    if (!r.start_date) return false;
+    const s2 = new Date(r.start_date);
+    const e2 = r.end_date ? new Date(r.end_date) : s2;
+    return s1 <= e2 && e1 >= s2;
   });
   return conflicts.length ? conflicts[0] : null;
 }
@@ -930,6 +960,8 @@ async function doReserve(){
   const note=document.getElementById('res-note').value.trim();
   if(!start){toast('Enter a start date');return;}
   const item=_items.find(i=>i.id===itemId); if(!item) return;
+  const overlap = checkReservationOverlap(itemId, start, end||null);
+  if (overlap) { toast(`⚠️ Dates overlap with a reservation by ${overlap.person} (${overlap.start_date}${overlap.end_date?'→'+overlap.end_date:''}). Please choose different dates.`); return; }
   const{error}=await sb.from('reservations').insert({item_id:itemId,item_name:item.name,qty,person:forPerson,start_date:start,end_date:end||null,note:note||null,status:'active'});
   if(error){toast('Error: '+error.message);return;}
   await sb.from('activity_log').insert({type:'reserve',item_id:itemId,item_name:item.name,qty,person:forPerson,note:`${start}${end?'→'+end:''}`});
