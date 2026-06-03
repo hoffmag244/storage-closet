@@ -244,7 +244,14 @@
         <div class="field"><label>SKU / tag</label><input type="text" id="m-sku" placeholder="EC-025"></div>
         <div class="field"><label>Notes</label><input type="text" id="m-notes" placeholder="Optional"></div>
       </div>
-      <div class="btn-row"><button class="btn btn-ghost" onclick="addItem()">Add item</button></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="addItem()">Add item</button>
+        <label class="btn btn-blue" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+          Import from Excel
+          <input type="file" id="import-file" accept=".xlsx" style="display:none" onchange="importFromExcel(event)">
+        </label>
+      </div>
+      <div id="import-status" style="font-size:12px;color:var(--text2);margin-top:8px;min-height:16px"></div>
     </div>
     <div class="panel panel-bare">
       <table class="tbl">
@@ -357,6 +364,7 @@
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const configured = SUPABASE_URL !== 'YOUR_SUPABASE_URL';
 let sb = null;
@@ -384,6 +392,7 @@ function submitLogin() {
   if (pin === ADMIN_PIN)     session = { name, role: 'admin' };
   else if (pin === USER_PIN) session = { name, role: 'user' };
   else { document.getElementById('login-err').textContent = 'Incorrect PIN.'; return; }
+  localStorage.setItem('sc_session', JSON.stringify(session));
   closeLogin();
   updateNav();
   refreshTabAccess();
@@ -393,6 +402,7 @@ function submitLogin() {
 }
 function signOut() {
   session = { name: null, role: null };
+  localStorage.removeItem('sc_session');
   updateNav(); refreshTabAccess(); updateReserveForField(); sw('browse'); toast('Signed out');
 }
 function updateNav() {
@@ -406,10 +416,11 @@ function updateNav() {
 function refreshTabAccess() {
   const u = !!session.role, a = session.role === 'admin';
   ['tab-checkout','tab-reserve','tab-checkin'].forEach(id => document.getElementById(id).disabled = !u);
-  document.getElementById('tab-manage').disabled = !a;
+  document.getElementById('tab-manage').style.display = a ? '' : 'none';
   document.getElementById('tab-log').style.display = a ? '' : 'none';
   document.getElementById('admin-post-bar').classList.toggle('show', a);
   if (!a && document.getElementById('sec-log').classList.contains('on')) sw('browse');
+  if (!a && document.getElementById('sec-manage').classList.contains('on')) sw('browse');
   renderAnnouncements();
 }
 function updateReserveForField() {
@@ -813,7 +824,76 @@ async function deleteAnnouncement(id) {
   await renderAnnouncements();
 }
 
+// ── Excel import ──────────────────────────────────────────────────
+async function importFromExcel(event) {
+  if (session.role !== 'admin') return;
+  const file = event.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('import-status');
+  status.textContent = 'Reading file…';
+  try {
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type: 'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+    if (!rows.length) { status.textContent = 'No rows found in file.'; return; }
+
+    // Normalize headers: accept "Name *" or "name", "Category *" or "category" etc.
+    const normalize = str => String(str).toLowerCase().replace(/[^a-z]/g, '');
+    const colMap = {};
+    const fieldAliases = {
+      name:     ['name'],
+      category: ['category'],
+      location: ['locationbin','location','bin'],
+      qty:      ['qtyonhand','qty','quantity'],
+      sku:      ['skutag','sku','tag'],
+      notes:    ['notes'],
+    };
+    const sampleRow = rows[0];
+    for (const key of Object.keys(sampleRow)) {
+      const n = normalize(key);
+      for (const [field, aliases] of Object.entries(fieldAliases)) {
+        if (aliases.some(a => n.includes(a))) { colMap[field] = key; break; }
+      }
+    }
+    if (!colMap.name) { status.textContent = 'Could not find a "Name" column. Check your headers.'; return; }
+
+    const toInsert = rows
+      .filter(r => String(r[colMap.name]||'').trim())
+      .map(r => ({
+        name:     String(r[colMap.name]||'').trim(),
+        category: String(r[colMap.category]||'General').trim() || 'General',
+        location: String(r[colMap.location]||'Unknown').trim() || 'Unknown',
+        qty:      parseInt(r[colMap.qty]) || 0,
+        sku:      String(r[colMap.sku]||'').trim() || null,
+        notes:    String(r[colMap.notes]||'').trim() || null,
+      }));
+
+    if (!toInsert.length) { status.textContent = 'No valid rows to import.'; return; }
+    status.textContent = `Importing ${toInsert.length} items…`;
+
+    // Insert in batches of 50
+    let inserted = 0;
+    for (let i = 0; i < toInsert.length; i += 50) {
+      const batch = toInsert.slice(i, i + 50);
+      const { error } = await sb.from('items').insert(batch);
+      if (error) { status.textContent = `Error on batch: ${error.message}`; return; }
+      inserted += batch.length;
+    }
+    status.textContent = `✓ Imported ${inserted} items successfully.`;
+    event.target.value = '';
+    await refresh();
+  } catch(e) {
+    status.textContent = 'Error reading file: ' + e.message;
+  }
+}
+
 // ── Boot ──────────────────────────────────────────────────────────
+// Restore session from localStorage
+try {
+  const saved = localStorage.getItem('sc_session');
+  if (saved) session = JSON.parse(saved);
+} catch(e) {}
 updateNav(); refreshTabAccess(); updateReserveForField();
 document.getElementById('res-start').value=new Date().toISOString().slice(0,10);
 if(configured) { refresh(); renderAnnouncements(); }
