@@ -375,10 +375,11 @@
 <div class="overlay" id="login-modal">
   <div class="modal">
     <div class="modal-title">Sign in</div>
-    <div class="modal-sub">Select your name and enter your PIN.</div>
+    <div class="modal-sub">Type your name and enter your PIN.</div>
     <div class="field" style="margin-bottom:10px">
       <label>Your name</label>
-      <select id="login-name"><option value="">— select your name —</option></select>
+      <input type="text" id="login-name" placeholder="Start typing your name…" autocomplete="off" list="login-name-list" oninput="loginNameInput()">
+      <datalist id="login-name-list"></datalist>
     </div>
     <div class="field">
       <label>PIN</label>
@@ -460,31 +461,30 @@ function openLogin(onSuccess) {
   _loginCallback = onSuccess || null;
   document.getElementById('login-err').textContent = '';
   document.getElementById('login-pin').value = '';
-  const sel = document.getElementById('login-name');
-  sel.innerHTML = '<option value="">— select your name —</option>' +
-    _users.map(u => `<option value="${u.id}">${u.name} (${roleLabel(u.role)})</option>`).join('');
-  if (session.id) sel.value = session.id;
+  document.getElementById('login-name').value = session.name || '';
+  // Populate datalist
+  document.getElementById('login-name-list').innerHTML =
+    _users.map(u => `<option value="${u.name}">${u.name} (${roleLabel(u.role)})</option>`).join('');
   document.getElementById('login-modal').classList.add('open');
-  setTimeout(() => document.getElementById('login-pin').focus(), 80);
+  setTimeout(() => document.getElementById('login-name').focus(), 80);
+}
+function loginNameInput() {
+  // Auto-advance to PIN field once a valid name is fully typed/selected
+  const val = document.getElementById('login-name').value.trim();
+  if (_users.some(u => u.name.toLowerCase() === val.toLowerCase())) {
+    setTimeout(() => document.getElementById('login-pin').focus(), 80);
+  }
 }
 function closeLogin() { document.getElementById('login-modal').classList.remove('open'); }
 
 async function submitLogin() {
-  const uid  = document.getElementById('login-name').value;
+  const nameVal = document.getElementById('login-name').value.trim();
   const pin  = document.getElementById('login-pin').value.trim();
   const errEl = document.getElementById('login-err');
-  if (!uid) { errEl.textContent = 'Select your name.'; return; }
-
-  // Bootstrap: first-ever admin creation
-  if (pin === ADMIN_BOOTSTRAP_PIN && _users.length === 0) {
-    errEl.textContent = 'No users yet — add users in the Users tab after first sign-in.';
-    return;
-  }
-
-  const user = _users.find(u => u.id === uid);
-  if (!user) { errEl.textContent = 'User not found.'; return; }
+  if (!nameVal) { errEl.textContent = 'Enter your name.'; return; }
+  const user = _users.find(u => u.name.toLowerCase() === nameVal.toLowerCase());
+  if (!user) { errEl.textContent = 'Name not found. Check spelling.'; return; }
   if (user.pin !== pin) { errEl.textContent = 'Incorrect PIN.'; return; }
-
   session = { id: user.id, name: user.name, role: user.role };
   localStorage.setItem('sc_session', JSON.stringify(session));
   closeLogin();
@@ -689,15 +689,20 @@ function renderResActive() {
   const el=document.getElementById('res-active-list');
   if(!_reservations.length){el.innerHTML='<p class="empty">No active reservations</p>';return;}
   el.innerHTML=`<table class="tbl"><thead><tr>
-    <th style="width:22%">Item</th><th style="width:8%">Qty</th><th style="width:16%">Person</th>
-    <th style="width:12%">Start</th><th style="width:12%">End</th><th style="width:16%">Note</th><th style="width:14%"></th>
+    <th style="width:20%">Item</th><th style="width:7%">Qty</th><th style="width:14%">Person</th>
+    <th style="width:11%">Start</th><th style="width:11%">End</th><th style="width:13%">Note</th><th style="width:24%"></th>
   </tr></thead><tbody>`+
     _reservations.map(r=>{
       const canCancel=isAnyStaff()||(session.role==='ra'&&session.name===r.person);
+      const isOwner=session.name===r.person;
+      const canCheckout=isLoggedIn()&&(isOwner||isAnyStaff());
       return `<tr><td>${r.item_name}</td><td>${r.qty}</td><td>${r.person}</td>
         <td>${r.start_date||'—'}</td><td>${r.end_date||'—'}</td>
         <td style="color:var(--text2)">${r.note||'—'}</td>
-        <td>${canCancel?`<button class="btn-sm btn-sm-red" onclick="cancelRes('${r.id}')">Cancel</button>`:'<span style="font-size:11px;color:var(--text3)">Not yours</span>'}</td></tr>`;
+        <td style="display:flex;gap:5px;flex-wrap:wrap">
+          ${canCheckout?`<button class="btn-sm btn-sm-teal" onclick="checkoutFromReservation('${r.id}')">Check out</button>`:''}
+          ${canCancel?`<button class="btn-sm btn-sm-red" onclick="cancelRes('${r.id}')">Cancel</button>`:'<span style="font-size:11px;color:var(--text3)">Not yours</span>'}
+        </td></tr>`;
     }).join('')+
   '</tbody></table>';
 }
@@ -821,6 +826,7 @@ async function submitItemModal(){
     const due=document.getElementById('im-co-due').value;
     const note=document.getElementById('im-co-note').value.trim();
     if(availQty(item,_checkouts)<qty){toast('Not enough available');return;}
+    if(due){const conflict=checkDateConflict(item.id,due);if(conflict){toast(`⚠️ Due date conflicts with a reservation by ${conflict.person} starting ${conflict.start_date}. Please change the return date.`);return;}}
     const{error}=await sb.from('checkouts').insert({item_id:item.id,item_name:item.name,qty,person:session.name,due_back:due||null,note:note||null,status:'out'});
     if(error){toast('Error: '+error.message);return;}
     await sb.from('activity_log').insert({type:'checkout',item_id:item.id,item_name:item.name,qty,person:session.name,note:note||null});
@@ -861,6 +867,20 @@ async function confirmReturn(){
 }
 document.getElementById('return-modal').addEventListener('click',function(e){if(e.target===this)closeReturnModal();});
 
+// ── Date conflict check ───────────────────────────────────────────
+function checkDateConflict(itemId, dueBack) {
+  if (!dueBack) return null; // no due date = no conflict to check
+  const due = new Date(dueBack);
+  const conflicts = _reservations.filter(r => {
+    if (r.item_id !== itemId) return false;
+    if (!r.start_date) return false;
+    const start = new Date(r.start_date);
+    // conflict if due date is on or after reservation start
+    return due >= start;
+  });
+  return conflicts.length ? conflicts[0] : null;
+}
+
 // ── Actions ───────────────────────────────────────────────────────
 async function doCheckout(){
   if(!session.role){openLogin();return;}
@@ -870,11 +890,34 @@ async function doCheckout(){
   const note=document.getElementById('co-note').value.trim();
   const item=_items.find(i=>i.id===itemId); if(!item) return;
   if(availQty(item,_checkouts)<qty){toast('Not enough available');return;}
+  // Date conflict check
+  if (due) {
+    const conflict = checkDateConflict(itemId, due);
+    if (conflict) {
+      toast(`⚠️ Due date conflicts with a reservation by ${conflict.person} starting ${conflict.start_date}. Please change the return date.`);
+      return;
+    }
+  }
   const{error}=await sb.from('checkouts').insert({item_id:itemId,item_name:item.name,qty,person:session.name,due_back:due||null,note:note||null,status:'out'});
   if(error){toast('Error: '+error.message);return;}
   await sb.from('activity_log').insert({type:'checkout',item_id:itemId,item_name:item.name,qty,person:session.name,note:note||null});
   document.getElementById('co-qty').value=1; document.getElementById('co-due').value=''; document.getElementById('co-note').value='';
   await refresh(); toast(`Checked out ${qty}× ${item.name}`);
+}
+
+async function checkoutFromReservation(resId) {
+  if(!session.role){openLogin();return;}
+  const res=_reservations.find(r=>r.id===resId); if(!res) return;
+  const item=_items.find(i=>i.id===res.item_id); if(!item) return;
+  if(availQty(item,_checkouts)<res.qty){toast('Not enough available to check out');return;}
+  // Use reservation end date as due back if set
+  const due=res.end_date||null;
+  const{error}=await sb.from('checkouts').insert({item_id:item.id,item_name:item.name,qty:res.qty,person:res.person,due_back:due,note:`From reservation`,status:'out'});
+  if(error){toast('Error: '+error.message);return;}
+  await sb.from('activity_log').insert({type:'checkout',item_id:item.id,item_name:item.name,qty:res.qty,person:res.person,note:'From reservation'});
+  // Mark reservation as fulfilled
+  await sb.from('reservations').update({status:'fulfilled'}).eq('id',resId);
+  await refresh(); toast(`Checked out ${res.qty}× ${item.name} for ${res.person}`);
 }
 
 async function doReserve(){
