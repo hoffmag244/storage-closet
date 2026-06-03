@@ -3,30 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Storage Closet</title>
+<title>Work Room Checkout</title>
+<link rel="icon" type="image/png" href="favicon.png">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   :root{
-    --bg:#ffffff;--bg2:#f5f5f3;--bg3:#ebebea;
-    --text:#1a1a18;--text2:#6b6b66;--text3:#9b9b96;
-    --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);
+    --bg:#ffffff;--bg2:#f0f4f9;--bg3:#e2eaf4;
+    --text:#1a2535;--text2:#4a5a72;--text3:#8a9ab2;
+    --border:rgba(30,70,140,0.12);--border2:rgba(30,70,140,0.22);
+    --accent:#1a56a0;--accent2:#2563b0;
     --radius:8px;--radius-lg:12px;
     --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     --mono:'SF Mono','Fira Mono',monospace;
   }
   @media(prefers-color-scheme:dark){
-    :root{--bg:#1c1c1a;--bg2:#242422;--bg3:#2e2e2c;--text:#f0f0ec;--text2:#a0a09a;--text3:#6a6a64;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);}
+    :root{--bg:#161e2e;--bg2:#1a2235;--bg3:#1e293f;--text:#e8edf5;--text2:#8a9ab5;--text3:#4a5a72;--border:rgba(100,150,220,0.12);--border2:rgba(100,150,220,0.22);}
   }
   body{font-family:var(--font);background:var(--bg2);color:var(--text);min-height:100vh;}
-  nav{background:var(--bg);border-bottom:0.5px solid var(--border2);padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:52px;}
-  .nav-title{font-size:15px;font-weight:500;color:var(--text);flex:1;}
-  .nav-user{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px;}
+  nav{background:var(--accent);border-bottom:none;padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:52px;}
+  .nav-title{font-size:15px;font-weight:500;color:#ffffff;flex:1;}
+  .nav-user{font-size:13px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;}
   .nav-badge{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;}
   .badge-admin{background:#FAEEDA;color:#633806;}
-  .badge-sra{background:#E6F1FB;color:#0C447C;}
+  .badge-sra{background:#dbeafe;color:#1e40af;}
   .badge-user{background:#E1F5EE;color:#085041;}
-  .btn-link{background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:4px 8px;border-radius:var(--radius);}
-  .btn-link:hover{background:var(--bg3);}
+  .btn-link{background:none;border:none;color:rgba(255,255,255,0.8);font-size:13px;cursor:pointer;padding:4px 8px;border-radius:var(--radius);}
+  .btn-link:hover{background:rgba(255,255,255,0.15);}
   .page{max-width:960px;margin:0 auto;padding:1.5rem 1rem;}
   .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
   .stat{background:var(--bg);border-radius:var(--radius);padding:12px 16px;border:0.5px solid var(--border);}
@@ -35,7 +37,7 @@
   .sv-g{color:#1D9E75;}.sv-r{color:#A32D2D;}.sv-b{color:#185FA5;}
   .tabs{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:0.5px solid var(--border);overflow-x:auto;}
   .tab{padding:8px 14px;font-size:13px;color:var(--text2);cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
-  .tab.on{color:var(--text);font-weight:500;border-bottom-color:var(--text);}
+  .tab.on{color:var(--accent);font-weight:500;border-bottom-color:var(--accent);}
   .tab:disabled{opacity:0.4;cursor:default;}
   .sec{display:none;}.sec.on{display:block;}
   .topbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;}
@@ -118,7 +120,7 @@
 <body>
 
 <script>
-  // ── CONFIG ──
+ // ── CONFIG ──
   const SUPABASE_URL      = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
   const DEFAULT_PIN       = '0000';  // Every new user starts with this PIN
@@ -126,7 +128,7 @@
 </script>
 
 <nav>
-  <span class="nav-title">📦 Storage Closet</span>
+  <span class="nav-title">🔷 Work Room Checkout</span>
   <div class="nav-user">
     <span id="nav-name" style="color:var(--text2);font-size:13px">Not signed in</span>
     <button class="btn-link" id="nav-btn" onclick="openLogin()">Sign in</button>
@@ -440,12 +442,14 @@ function isRA()       { return session.role==='ra'; }
 function isAnyStaff() { return isAdmin() || isSRA(); }
 function isLoggedIn() { return !!session.role; }
 function roleBadgeClass(role) {
-  if (role==='admin'||role==='rhd') return 'badge-admin';
+  if (role==='admin') return 'badge-admin';
+  if (role==='rhd') return 'badge-admin';
   if (role==='sra') return 'badge-sra';
   return 'badge-user';
 }
 function roleLabel(role) {
-  if (role==='admin'||role==='rhd') return 'RHD';
+  if (role==='admin') return 'Admin';
+  if (role==='rhd') return 'RHD';
   if (role==='sra') return 'SRA';
   return 'RA';
 }
