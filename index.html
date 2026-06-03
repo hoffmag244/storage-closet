@@ -120,18 +120,18 @@
 <body>
 
 <script>
-   // Config
+  // ── CONFIG ──
   const SUPABASE_URL      = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
   const DEFAULT_PIN       = '0000';  // Every new user starts with this PIN
-  const ADMIN_BOOTSTRAP_PIN = '1234'; // One-time PIN to create the first admin account
+  const ADMIN_BOOTSTRAP_PIN = '9999'; // One-time PIN to create the first admin account
 </script>
 
 <nav>
   <span class="nav-title">Work Room Checkout</span>
   <div class="nav-user">
-  <span id="nav-name" style="color:#ffffff;font-size:13px">Not signed in</span>   
-  <button class="btn-link" id="nav-btn" onclick="openLogin()">Sign in</button>
+    <span id="nav-name" style="color:#ffffff;font-size:13px">Not signed in</span>
+    <button class="btn-link" id="nav-btn" onclick="openLogin()">Sign in</button>
   </div>
 </nav>
 
@@ -218,7 +218,7 @@
   <div id="sec-checkin" class="sec">
     <div class="panel">
       <div class="panel-title">Return item</div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">You can only return items you checked out. Admins can return anything.</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">RAs can only return their own items. SRAs, RHDs, and Admins can return anything.</p>
       <div id="return-list"></div>
     </div>
   </div>
@@ -273,6 +273,7 @@
             <option value="ra">RA</option>
             <option value="sra">SRA</option>
             <option value="rhd">RHD</option>
+            <option value="admin">Admin</option>
           </select>
         </div>
         <div class="field" style="justify-content:flex-end">
@@ -441,6 +442,7 @@ function isSRA()      { return session.role==='sra'; }
 function isRA()       { return session.role==='ra'; }
 function isAnyStaff() { return isAdmin() || isSRA(); }
 function isLoggedIn() { return !!session.role; }
+function canManageOthers() { return isAnyStaff(); } // RHD, SRA, Admin can all return/cancel for anyone
 function roleBadgeClass(role) {
   if (role==='admin') return 'badge-admin';
   if (role==='rhd') return 'badge-admin';
@@ -549,10 +551,10 @@ function refreshTabAccess() {
 
 function updateReserveForField() {
   const admin = isAdmin(), staff = isAnyStaff();
-  document.getElementById('res-for-label').textContent = admin ? '(assign to anyone)' : '(you)';
+  document.getElementById('res-for-label').textContent = staff ? '(assign to anyone)' : '(you)';
   const sel = document.getElementById('res-person-select');
   const inp = document.getElementById('res-person-input');
-  if (admin) {
+  if (staff) {
     sel.style.display = ''; inp.style.display = 'none';
     sel.innerHTML = _users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
   } else {
@@ -561,7 +563,7 @@ function updateReserveForField() {
   }
   const wrap = document.getElementById('im-res-for-wrap');
   if (wrap) {
-    wrap.style.display = admin ? 'block' : 'none';
+    wrap.style.display = staff ? 'block' : 'none';
     const imSel = document.getElementById('im-res-for-select');
     if (imSel) imSel.innerHTML = _users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
   }
@@ -691,7 +693,7 @@ function renderResActive() {
     <th style="width:12%">Start</th><th style="width:12%">End</th><th style="width:16%">Note</th><th style="width:14%"></th>
   </tr></thead><tbody>`+
     _reservations.map(r=>{
-      const canCancel=session.role==='admin'||(session.role==='user'&&session.name===r.person);
+      const canCancel=isAnyStaff()||(session.role==='ra'&&session.name===r.person);
       return `<tr><td>${r.item_name}</td><td>${r.qty}</td><td>${r.person}</td>
         <td>${r.start_date||'—'}</td><td>${r.end_date||'—'}</td>
         <td style="color:var(--text2)">${r.note||'—'}</td>
@@ -708,7 +710,7 @@ function renderReturnList() {
     <th style="width:14%">Date out</th><th style="width:14%">Due back</th><th style="width:20%"></th>
   </tr></thead><tbody>`+
     _checkouts.map(t=>{
-      const canReturn=session.role==='admin'||(session.role==='user'&&session.name===t.person);
+      const canReturn=isAnyStaff()||(session.role==='ra'&&session.name===t.person);
       return `<tr><td>${t.item_name}</td><td>${t.qty}</td><td>${t.person}</td>
         <td>${t.created_at?.slice(0,10)||''}</td><td>${t.due_back||'—'}</td>
         <td>${canReturn?`<button class="btn-sm btn-sm-teal" onclick="openReturnModal('${t.id}')">Return</button>`:'<span style="font-size:11px;color:var(--text3)">Not yours</span>'}</td></tr>`;
@@ -828,7 +830,7 @@ async function submitItemModal(){
     const start=document.getElementById('im-res-start').value;
     const end=document.getElementById('im-res-end').value;
     const note=document.getElementById('im-res-note').value.trim();
-    const forPerson=session.role==='admin'?(document.getElementById('im-res-for-select').value||session.name):session.name;
+    const forPerson=isAnyStaff()?(document.getElementById('im-res-for-select').value||session.name):session.name;
     if(!start){toast('Enter a start date');return;}
     const{error}=await sb.from('reservations').insert({item_id:item.id,item_name:item.name,qty,person:forPerson,start_date:start,end_date:end||null,note:note||null,status:'active'});
     if(error){toast('Error: '+error.message);return;}
@@ -842,7 +844,7 @@ document.getElementById('item-modal').addEventListener('click',function(e){if(e.
 let _returnTxId=null;
 function openReturnModal(txId){
   const tx=_checkouts.find(t=>t.id===txId); if(!tx) return;
-  if(session.role!=='admin'&&session.name!==tx.person){toast('You can only return your own items');return;}
+  if(!isAnyStaff()&&session.name!==tx.person){toast('You can only return your own items');return;}
   _returnTxId=txId;
   document.getElementById('return-modal-sub').textContent=`Returning: ${tx.item_name} ×${tx.qty} (checked out by ${tx.person})`;
   document.getElementById('ret-note').value=''; document.getElementById('return-err').textContent='';
@@ -879,7 +881,7 @@ async function doReserve(){
   if(!session.role){openLogin();return;}
   const itemId=document.getElementById('res-item').value;
   const qty=parseInt(document.getElementById('res-qty').value)||1;
-  const forPerson=session.role==='admin'?(document.getElementById('res-person-select').value||session.name):session.name;
+  const forPerson=isAnyStaff()?(document.getElementById('res-person-select').value||session.name):session.name;
   const start=document.getElementById('res-start').value;
   const end=document.getElementById('res-end').value;
   const note=document.getElementById('res-note').value.trim();
@@ -895,7 +897,7 @@ async function doReserve(){
 async function cancelRes(resId){
   const res=_reservations.find(r=>r.id===resId);
   if(!res){toast('Not found');return;}
-  if(session.role!=='admin'&&session.name!==res.person){toast('You can only cancel your own reservations');return;}
+  if(!canManageOthers()&&session.name!==res.person){toast('You can only cancel your own reservations');return;}
   const{error}=await sb.from('reservations').update({status:'cancelled'}).eq('id',resId);
   if(error){toast('Error: '+error.message);return;}
   await refresh(); toast('Reservation cancelled');
