@@ -5,24 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Storage Closet</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg:#ffffff; --bg2:#f5f5f3; --bg3:#ebebea;
-    --text:#1a1a18; --text2:#6b6b66; --text3:#9b9b96;
-    --border:rgba(0,0,0,0.12); --border2:rgba(0,0,0,0.22);
-    --radius:8px; --radius-lg:12px;
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#ffffff;--bg2:#f5f5f3;--bg3:#ebebea;
+    --text:#1a1a18;--text2:#6b6b66;--text3:#9b9b96;
+    --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);
+    --radius:8px;--radius-lg:12px;
     --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     --mono:'SF Mono','Fira Mono',monospace;
   }
   @media(prefers-color-scheme:dark){
-    :root{ --bg:#1c1c1a; --bg2:#242422; --bg3:#2e2e2c; --text:#f0f0ec; --text2:#a0a09a; --text3:#6a6a64; --border:rgba(255,255,255,0.1); --border2:rgba(255,255,255,0.2); }
+    :root{--bg:#1c1c1a;--bg2:#242422;--bg3:#2e2e2c;--text:#f0f0ec;--text2:#a0a09a;--text3:#6a6a64;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);}
   }
   body{font-family:var(--font);background:var(--bg2);color:var(--text);min-height:100vh;}
   nav{background:var(--bg);border-bottom:0.5px solid var(--border2);padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:52px;}
   .nav-title{font-size:15px;font-weight:500;color:var(--text);flex:1;}
   .nav-user{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px;}
   .nav-badge{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;}
-  .badge-admin{background:#FAEEDA;color:#633806;} .badge-user{background:#E1F5EE;color:#085041;}
+  .badge-admin{background:#FAEEDA;color:#633806;}.badge-user{background:#E1F5EE;color:#085041;}
   .btn-link{background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:4px 8px;border-radius:var(--radius);}
   .btn-link:hover{background:var(--bg3);}
   .page{max-width:960px;margin:0 auto;padding:1.5rem 1rem;}
@@ -30,12 +30,12 @@
   .stat{background:var(--bg);border-radius:var(--radius);padding:12px 16px;border:0.5px solid var(--border);}
   .stat-l{font-size:11px;color:var(--text2);margin-bottom:2px;}
   .stat-v{font-size:24px;font-weight:500;}
-  .sv-g{color:#1D9E75;} .sv-r{color:#A32D2D;} .sv-b{color:#185FA5;}
+  .sv-g{color:#1D9E75;}.sv-r{color:#A32D2D;}.sv-b{color:#185FA5;}
   .tabs{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:0.5px solid var(--border);overflow-x:auto;}
   .tab{padding:8px 14px;font-size:13px;color:var(--text2);cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
   .tab.on{color:var(--text);font-weight:500;border-bottom-color:var(--text);}
   .tab:disabled{opacity:0.4;cursor:default;}
-  .sec{display:none;} .sec.on{display:block;}
+  .sec{display:none;}.sec.on{display:block;}
   .topbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;}
   .topbar input,.topbar select{flex:1;min-width:120px;}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:1rem;}
@@ -47,14 +47,14 @@
   .ic-notes{font-size:11px;color:var(--text3);margin-top:6px;}
   .ic-tap{font-size:11px;color:var(--text3);margin-top:6px;}
   .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;}
-  .b-avail{background:#E1F5EE;color:#085041;} .b-out{background:#FCEBEB;color:#791F1F;} .b-res{background:#E6F1FB;color:#0C447C;}
+  .b-avail{background:#E1F5EE;color:#085041;}.b-out{background:#FCEBEB;color:#791F1F;}.b-res{background:#E6F1FB;color:#0C447C;}
   .qty-pill{font-size:12px;color:var(--text2);}
   .loc-tag{font-size:11px;background:var(--bg2);color:var(--text2);padding:2px 7px;border-radius:var(--radius);font-family:var(--mono);}
   .panel{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1rem;}
   .panel-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:1rem;}
   .panel-bare{padding:0 1.25rem;}
   .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
-  .frow.c3{grid-template-columns:1fr 1fr 1fr;} .frow.c4{grid-template-columns:1fr 1fr 1fr 1fr;}
+  .frow.c3{grid-template-columns:1fr 1fr 1fr;}.frow.c4{grid-template-columns:1fr 1fr 1fr 1fr;}
   .field{display:flex;flex-direction:column;gap:4px;}
   .field label{font-size:12px;color:var(--text2);}
   input,select,textarea{width:100%;padding:7px 10px;font-size:13px;font-family:var(--font);background:var(--bg);color:var(--text);border:0.5px solid var(--border2);border-radius:var(--radius);outline:none;}
@@ -70,6 +70,7 @@
   .btn-sm{padding:4px 10px;font-size:12px;border-radius:var(--radius);border:0.5px solid;font-weight:500;}
   .btn-sm-teal{background:#E1F5EE;color:#085041;border-color:#5DCAA5;}
   .btn-sm-red{background:#FCEBEB;color:#791F1F;border-color:#F09595;}
+  .btn-sm-amber{background:#FAEEDA;color:#633806;border-color:#EF9F27;}
   .tbl{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
   .tbl th{text-align:left;font-size:11px;color:var(--text2);font-weight:500;padding:6px 8px;border-bottom:0.5px solid var(--border);}
   .tbl td{padding:8px 8px;border-bottom:0.5px solid var(--border);color:var(--text);word-break:break-word;vertical-align:middle;}
@@ -77,16 +78,14 @@
   .log-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
   .log-row:last-child{border-bottom:none;}
   .dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
-  .dot-out{background:#BA7517;} .dot-in{background:#1D9E75;} .dot-res{background:#185FA5;}
+  .dot-out{background:#BA7517;}.dot-in{background:#1D9E75;}.dot-res{background:#185FA5;}
   .log-meta{font-size:11px;color:var(--text3);margin-top:2px;}
-  /* overlays */
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center;overflow-y:auto;padding:2rem 1rem;}
   .overlay.open{display:flex;}
   .modal{background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:1.5rem;width:100%;max-width:400px;margin:auto;}
   .modal-title{font-size:16px;font-weight:500;margin-bottom:6px;}
   .modal-sub{font-size:13px;color:var(--text2);margin-bottom:1.25rem;}
   .modal-err{font-size:12px;color:#A32D2D;margin-top:8px;min-height:18px;}
-  /* item action modal */
   .item-modal{background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius-lg);width:100%;max-width:480px;overflow:hidden;margin:auto;}
   .im-header{padding:1.25rem 1.25rem 1rem;border-bottom:0.5px solid var(--border);}
   .im-name{font-size:17px;font-weight:500;color:var(--text);margin-bottom:6px;}
@@ -95,14 +94,11 @@
   .im-tab{flex:1;padding:10px;font-size:13px;font-weight:500;background:none;border:none;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
   .im-tab.on{color:var(--text);border-bottom-color:var(--text);}
   .im-body{padding:1.25rem;}
-  .im-action{display:none;} .im-action.on{display:block;}
+  .im-action{display:none;}.im-action.on{display:block;}
   .im-footer{display:flex;gap:8px;justify-content:flex-end;padding:0 1.25rem 1.25rem;}
-  /* return verify modal */
   .empty{text-align:center;color:var(--text2);font-size:13px;padding:2rem 0;}
   #toast{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);padding:9px 18px;font-size:13px;color:var(--text);opacity:0;transition:opacity .3s;pointer-events:none;z-index:200;white-space:nowrap;}
   #toast.show{opacity:1;}
-  .config-banner{background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:var(--radius);padding:12px 16px;font-size:13px;color:#633806;margin-bottom:1.25rem;}
-  .config-banner code{font-family:var(--mono);background:rgba(0,0,0,0.08);padding:1px 5px;border-radius:4px;font-size:12px;}
   .announce-bar{background:#E6F1FB;border-bottom:0.5px solid #85B7EB;}
   .announce-item{display:flex;align-items:center;gap:10px;padding:8px 1.5rem;border-bottom:0.5px solid #B5D4F4;}
   .announce-item:last-child{border-bottom:none;}
@@ -114,18 +110,17 @@
   .admin-post-bar{background:var(--bg);border-bottom:0.5px solid var(--border);padding:8px 1.5rem;display:none;align-items:center;gap:8px;}
   .admin-post-bar.show{display:flex;}
   .admin-post-bar input{flex:1;max-width:520px;}
-  @media(max-width:600px){.frow.c3,.frow.c4{grid-template-columns:1fr 1fr;} .stats{grid-template-columns:1fr 1fr 1fr;}}
+  @media(max-width:600px){.frow.c3,.frow.c4{grid-template-columns:1fr 1fr;}.stats{grid-template-columns:1fr 1fr 1fr;}}
 </style>
 </head>
 <body>
 
 <script>
-  // ── STEP 1: Paste your Supabase credentials ──
-  const SUPABASE_URL     = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
+  // ── CONFIG ──
+  const SUPABASE_URL      = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
-  // ── STEP 2: Set your PINs ──
-  const ADMIN_PIN = '1234';
-  const USER_PIN  = '0000';
+  const DEFAULT_PIN       = '0000';  // Every new user starts with this PIN
+  const ADMIN_BOOTSTRAP_PIN = '1234'; // One-time PIN to create the first admin account
 </script>
 
 <nav>
@@ -136,18 +131,13 @@
   </div>
 </nav>
 
-<!-- announcements -->
 <div id="announce-bar" class="announce-bar"></div>
-<!-- admin post bar -->
 <div class="admin-post-bar" id="admin-post-bar">
   <input type="text" id="announce-input" placeholder="Type an announcement…" maxlength="200" onkeydown="if(event.key==='Enter')postAnnouncement()">
   <button class="btn btn-blue" onclick="postAnnouncement()">Post</button>
 </div>
 
 <div class="page">
-  <div id="config-banner" class="config-banner" style="display:none">
-    ⚠️ Supabase not configured. Replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> at the top of index.html.
-  </div>
   <div class="stats" id="stats"></div>
   <div class="tabs">
     <button class="tab on"  onclick="sw('browse')">Browse</button>
@@ -155,6 +145,7 @@
     <button class="tab" id="tab-reserve"  onclick="sw('reserve')">Reserve</button>
     <button class="tab" id="tab-checkin"  onclick="sw('checkin')">Return</button>
     <button class="tab" id="tab-manage"   onclick="sw('manage')">Manage</button>
+    <button class="tab" id="tab-users"    onclick="sw('users')">Users</button>
     <button class="tab" id="tab-log"      onclick="sw('log')">Log</button>
   </div>
 
@@ -173,7 +164,7 @@
     <div id="browse-grid" class="grid"></div>
   </div>
 
-  <!-- CHECK OUT (tab) -->
+  <!-- CHECK OUT -->
   <div id="sec-checkout" class="sec">
     <div class="panel">
       <div class="panel-title">Check out item</div>
@@ -181,8 +172,7 @@
         <div class="field"><label>Item</label><select id="co-item"></select></div>
         <div class="field"><label>Quantity</label><input type="number" id="co-qty" value="1" min="1"></div>
       </div>
-      <div class="frow c3">
-        <div class="field"><label>Your name</label><input type="text" id="co-person" placeholder="Name" readonly></div>
+      <div class="frow">
         <div class="field"><label>Due back (optional)</label><input type="date" id="co-due"></div>
         <div class="field"><label>Note</label><input type="text" id="co-note" placeholder="Purpose…"></div>
       </div>
@@ -194,7 +184,7 @@
     </div>
   </div>
 
-  <!-- RESERVE (tab) -->
+  <!-- RESERVE -->
   <div id="sec-reserve" class="sec">
     <div class="panel">
       <div class="panel-title">Reserve an item</div>
@@ -203,8 +193,11 @@
         <div class="field"><label>Quantity</label><input type="number" id="res-qty" value="1" min="1"></div>
       </div>
       <div class="frow c3">
-        <div class="field"><label>Reserved for <span id="res-for-label" style="color:var(--text3)">(you)</span></label>
-          <input type="text" id="res-person" placeholder="Name"></div>
+        <div class="field">
+          <label>Reserved for <span id="res-for-label" style="color:var(--text3)">(you)</span></label>
+          <select id="res-person-select" style="display:none"></select>
+          <input type="text" id="res-person-input" placeholder="Your name" readonly>
+        </div>
         <div class="field"><label>Start date</label><input type="date" id="res-start"></div>
         <div class="field"><label>End date</label><input type="date" id="res-end"></div>
       </div>
@@ -217,11 +210,11 @@
     </div>
   </div>
 
-  <!-- RETURN (tab) -->
+  <!-- RETURN -->
   <div id="sec-checkin" class="sec">
     <div class="panel">
       <div class="panel-title">Return item</div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">Select the checkout you want to return. You must be signed in as the person who checked it out, or as admin.</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">You can only return items you checked out. Admins can return anything.</p>
       <div id="return-list"></div>
     </div>
   </div>
@@ -239,9 +232,8 @@
         </div>
         <div class="field"><label>Location / bin</label><input type="text" id="m-loc" placeholder="Shelf A3"></div>
       </div>
-      <div class="frow c3">
+      <div class="frow">
         <div class="field"><label>Qty on hand</label><input type="number" id="m-qty" value="1" min="0"></div>
-        <div class="field"><label>SKU / tag</label><input type="text" id="m-sku" placeholder="EC-025"></div>
         <div class="field"><label>Notes</label><input type="text" id="m-notes" placeholder="Optional"></div>
       </div>
       <div class="btn-row">
@@ -256,11 +248,44 @@
     <div class="panel panel-bare">
       <table class="tbl">
         <thead><tr>
-          <th style="width:26%">Name</th><th style="width:15%">Location</th>
-          <th style="width:14%">Category</th><th style="width:8%">Qty</th>
-          <th style="width:14%">Status</th><th style="width:23%"></th>
+          <th style="width:30%">Name</th><th style="width:18%">Location</th>
+          <th style="width:16%">Category</th><th style="width:10%">Qty</th>
+          <th style="width:14%">Status</th><th style="width:12%"></th>
         </tr></thead>
         <tbody id="manage-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div id="sec-users" class="sec">
+    <div class="panel">
+      <div class="panel-title">Add user</div>
+      <div class="frow c3">
+        <div class="field"><label>Full name</label><input type="text" id="u-name" placeholder="Jane Smith"></div>
+        <div class="field">
+          <label>Role</label>
+          <select id="u-role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="field" style="justify-content:flex-end">
+          <label>&nbsp;</label>
+          <button class="btn btn-ghost" onclick="addUser()">Add user</button>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text3);margin-top:4px">New users start with the default PIN: <strong id="default-pin-display" style="font-family:var(--mono)"></strong></p>
+    </div>
+    <div class="panel panel-bare">
+      <table class="tbl">
+        <thead><tr>
+          <th style="width:35%">Name</th>
+          <th style="width:18%">Role</th>
+          <th style="width:22%">PIN</th>
+          <th style="width:25%"></th>
+        </tr></thead>
+        <tbody id="users-body"></tbody>
       </table>
     </div>
   </div>
@@ -272,7 +297,7 @@
   </div>
 </div>
 
-<!-- ══ ITEM ACTION MODAL ══ -->
+<!-- ITEM ACTION MODAL -->
 <div class="overlay" id="item-modal">
   <div class="item-modal">
     <div class="im-header">
@@ -311,8 +336,8 @@
           <div class="field"><label>Note (optional)</label><input type="text" id="im-res-note" placeholder="Event…"></div>
         </div>
         <div class="field" id="im-res-for-wrap" style="display:none;margin-top:4px">
-          <label>Reserve for (admin: assign to someone)</label>
-          <input type="text" id="im-res-for" placeholder="Person's name">
+          <label>Reserve for</label>
+          <select id="im-res-for-select"></select>
         </div>
       </div>
     </div>
@@ -323,7 +348,7 @@
   </div>
 </div>
 
-<!-- ══ RETURN VERIFY MODAL ══ -->
+<!-- RETURN MODAL -->
 <div class="overlay" id="return-modal">
   <div class="modal">
     <div class="modal-title">Confirm return</div>
@@ -340,23 +365,44 @@
   </div>
 </div>
 
-<!-- ══ LOGIN MODAL ══ -->
+<!-- LOGIN MODAL -->
 <div class="overlay" id="login-modal">
   <div class="modal">
     <div class="modal-title">Sign in</div>
-    <div class="modal-sub">Enter your name and PIN to check out or make changes.</div>
+    <div class="modal-sub">Select your name and enter your PIN.</div>
     <div class="field" style="margin-bottom:10px">
       <label>Your name</label>
-      <input type="text" id="login-name" placeholder="First name or ID" autocomplete="off">
+      <select id="login-name"><option value="">— select your name —</option></select>
     </div>
     <div class="field">
       <label>PIN</label>
-      <input type="password" id="login-pin" placeholder="••••" maxlength="10" autocomplete="off" onkeydown="if(event.key==='Enter')submitLogin()">
+      <input type="password" id="login-pin" placeholder="••••" maxlength="20" autocomplete="off" onkeydown="if(event.key==='Enter')submitLogin()">
     </div>
     <div class="modal-err" id="login-err"></div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="closeLogin()">Cancel</button>
       <button class="btn btn-green" onclick="submitLogin()">Sign in</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PIN MODAL -->
+<div class="overlay" id="pin-modal">
+  <div class="modal">
+    <div class="modal-title">Change your PIN</div>
+    <div class="modal-sub">Choose a new PIN you'll remember.</div>
+    <div class="field" style="margin-bottom:10px">
+      <label>New PIN</label>
+      <input type="password" id="new-pin" placeholder="Enter new PIN" maxlength="20" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Confirm PIN</label>
+      <input type="password" id="confirm-pin" placeholder="Re-enter new PIN" maxlength="20" autocomplete="off" onkeydown="if(event.key==='Enter')submitChangePin()">
+    </div>
+    <div class="modal-err" id="pin-err"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closePinModal()">Cancel</button>
+      <button class="btn btn-green" onclick="submitChangePin()">Save PIN</button>
     </div>
   </div>
 </div>
@@ -369,75 +415,152 @@
 const configured = SUPABASE_URL !== 'YOUR_SUPABASE_URL';
 let sb = null;
 if (configured) sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-else document.getElementById('config-banner').style.display = 'block';
+
+// ── Session ───────────────────────────────────────────────────────
+let session = { id: null, name: null, role: null };
+try { const s = localStorage.getItem('sc_session'); if (s) session = JSON.parse(s); } catch(e){}
 
 // ── Auth ──────────────────────────────────────────────────────────
-let session = { name: null, role: null };
+let _users = [];
+let _loginCallback = null;
+
+async function loadUsers() {
+  if (!sb) return [];
+  const { data } = await sb.from('users').select('*').order('name');
+  return data || [];
+}
 
 function openLogin(onSuccess) {
   _loginCallback = onSuccess || null;
   document.getElementById('login-err').textContent = '';
-  document.getElementById('login-name').value = session.name || '';
   document.getElementById('login-pin').value = '';
+  const sel = document.getElementById('login-name');
+  sel.innerHTML = '<option value="">— select your name —</option>' +
+    _users.map(u => `<option value="${u.id}">${u.name}${u.role==='admin'?' (admin)':''}</option>`).join('');
+  if (session.id) sel.value = session.id;
   document.getElementById('login-modal').classList.add('open');
-  setTimeout(() => document.getElementById('login-name').focus(), 50);
+  setTimeout(() => document.getElementById('login-pin').focus(), 80);
 }
 function closeLogin() { document.getElementById('login-modal').classList.remove('open'); }
-let _loginCallback = null;
 
-function submitLogin() {
-  const name = document.getElementById('login-name').value.trim();
+async function submitLogin() {
+  const uid  = document.getElementById('login-name').value;
   const pin  = document.getElementById('login-pin').value.trim();
-  if (!name) { document.getElementById('login-err').textContent = 'Enter your name.'; return; }
-  if (pin === ADMIN_PIN)     session = { name, role: 'admin' };
-  else if (pin === USER_PIN) session = { name, role: 'user' };
-  else { document.getElementById('login-err').textContent = 'Incorrect PIN.'; return; }
+  const errEl = document.getElementById('login-err');
+  if (!uid) { errEl.textContent = 'Select your name.'; return; }
+
+  // Bootstrap: first-ever admin creation
+  if (pin === ADMIN_BOOTSTRAP_PIN && _users.length === 0) {
+    errEl.textContent = 'No users yet — add users in the Users tab after first sign-in.';
+    return;
+  }
+
+  const user = _users.find(u => u.id === uid);
+  if (!user) { errEl.textContent = 'User not found.'; return; }
+  if (user.pin !== pin) { errEl.textContent = 'Incorrect PIN.'; return; }
+
+  session = { id: user.id, name: user.name, role: user.role };
   localStorage.setItem('sc_session', JSON.stringify(session));
   closeLogin();
   updateNav();
   refreshTabAccess();
   updateReserveForField();
-  toast(`Signed in as ${name}`);
+  toast(`Signed in as ${user.name}`);
   if (_loginCallback) { _loginCallback(); _loginCallback = null; }
 }
+
 function signOut() {
-  session = { name: null, role: null };
+  session = { id: null, name: null, role: null };
   localStorage.removeItem('sc_session');
   updateNav(); refreshTabAccess(); updateReserveForField(); sw('browse'); toast('Signed out');
 }
+
 function updateNav() {
   document.getElementById('nav-name').innerHTML = session.role
     ? `${session.name} <span class="nav-badge badge-${session.role==='admin'?'admin':'user'}">${session.role}</span>`
     : 'Not signed in';
   const btn = document.getElementById('nav-btn');
-  btn.textContent = session.role ? 'Sign out' : 'Sign in';
-  btn.onclick = session.role ? signOut : openLogin;
+  if (session.role) {
+    btn.innerHTML = 'Change PIN &nbsp;·&nbsp; Sign out';
+    btn.onclick = null;
+    btn.innerHTML = '';
+    // Two separate buttons
+    const cp = document.createElement('button');
+    cp.className = 'btn-link'; cp.textContent = 'Change PIN'; cp.onclick = openPinModal;
+    const so = document.createElement('button');
+    so.className = 'btn-link'; so.textContent = 'Sign out'; so.onclick = signOut;
+    const sep = document.createElement('span');
+    sep.textContent = '·'; sep.style.color = 'var(--text3)';
+    btn.replaceWith(cp);
+    // insert after cp
+    cp.after(sep); sep.after(so);
+    // store refs for later replacement
+    document.getElementById && (window._navBtns = [cp, sep, so]);
+  } else {
+    // restore single sign-in button
+    if (window._navBtns) {
+      const [cp, sep, so] = window._navBtns;
+      const newBtn = document.createElement('button');
+      newBtn.className = 'btn-link'; newBtn.id = 'nav-btn'; newBtn.textContent = 'Sign in'; newBtn.onclick = openLogin;
+      cp.replaceWith(newBtn); sep.remove(); so.remove();
+      window._navBtns = null;
+    } else {
+      const btn2 = document.getElementById('nav-btn');
+      if (btn2) { btn2.textContent = 'Sign in'; btn2.onclick = openLogin; }
+    }
+  }
 }
+
 function refreshTabAccess() {
   const u = !!session.role, a = session.role === 'admin';
   ['tab-checkout','tab-reserve','tab-checkin'].forEach(id => document.getElementById(id).disabled = !u);
   document.getElementById('tab-manage').style.display = a ? '' : 'none';
-  document.getElementById('tab-log').style.display = a ? '' : 'none';
+  document.getElementById('tab-users').style.display  = a ? '' : 'none';
+  document.getElementById('tab-log').style.display    = a ? '' : 'none';
   document.getElementById('admin-post-bar').classList.toggle('show', a);
-  if (!a && document.getElementById('sec-log').classList.contains('on')) sw('browse');
-  if (!a && document.getElementById('sec-manage').classList.contains('on')) sw('browse');
+  if (!a && ['sec-manage','sec-users','sec-log'].some(id => document.getElementById(id).classList.contains('on'))) sw('browse');
   renderAnnouncements();
 }
+
 function updateReserveForField() {
-  // admin sees "reserve for" field; regular users get their own name auto-filled
   const isAdmin = session.role === 'admin';
-  document.getElementById('res-for-label').textContent = isAdmin ? '(admin: assign to anyone)' : '(you)';
-  const rp = document.getElementById('res-person');
-  if (session.role === 'user') { rp.value = session.name; rp.readOnly = true; }
-  else if (session.role === 'admin') { rp.value = ''; rp.readOnly = false; rp.placeholder = 'Person\'s name'; }
-  else { rp.value = ''; rp.readOnly = false; }
-  // same for item modal reserve-for
+  document.getElementById('res-for-label').textContent = isAdmin ? '(assign to anyone)' : '(you)';
+  const sel = document.getElementById('res-person-select');
+  const inp = document.getElementById('res-person-input');
+  if (isAdmin) {
+    sel.style.display = ''; inp.style.display = 'none';
+    sel.innerHTML = _users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+  } else {
+    sel.style.display = 'none'; inp.style.display = '';
+    inp.value = session.name || '';
+  }
   const wrap = document.getElementById('im-res-for-wrap');
-  if (wrap) wrap.style.display = isAdmin ? 'block' : 'none';
+  if (wrap) {
+    wrap.style.display = isAdmin ? 'block' : 'none';
+    const imSel = document.getElementById('im-res-for-select');
+    if (imSel) imSel.innerHTML = _users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+  }
+}
+
+// ── Change PIN modal ──────────────────────────────────────────────
+function openPinModal() { document.getElementById('pin-err').textContent=''; document.getElementById('new-pin').value=''; document.getElementById('confirm-pin').value=''; document.getElementById('pin-modal').classList.add('open'); setTimeout(()=>document.getElementById('new-pin').focus(),50); }
+function closePinModal() { document.getElementById('pin-modal').classList.remove('open'); }
+async function submitChangePin() {
+  const np = document.getElementById('new-pin').value.trim();
+  const cp = document.getElementById('confirm-pin').value.trim();
+  const errEl = document.getElementById('pin-err');
+  if (!np) { errEl.textContent = 'Enter a new PIN.'; return; }
+  if (np !== cp) { errEl.textContent = 'PINs do not match.'; return; }
+  if (np.length < 4) { errEl.textContent = 'PIN must be at least 4 characters.'; return; }
+  const { error } = await sb.from('users').update({ pin: np }).eq('id', session.id);
+  if (error) { errEl.textContent = 'Error: ' + error.message; return; }
+  _users = await loadUsers();
+  closePinModal();
+  toast('PIN changed successfully');
 }
 
 // ── Data ──────────────────────────────────────────────────────────
-let _items=[], _checkouts=[], _reservations=[], _log=[];
+let _items=[], _checkouts=[], _reservations=[], _log=[], _announcements=[];
 
 async function dbQ(table, fn) {
   if (!sb) return [];
@@ -449,6 +572,7 @@ async function loadItems()        { return dbQ('items', q => q.select('*').order
 async function loadCheckouts()    { return dbQ('checkouts', q => q.select('*').eq('status','out').order('created_at',{ascending:false})); }
 async function loadReservations() { return dbQ('reservations', q => q.select('*').eq('status','active').order('start_date')); }
 async function loadLog()          { return dbQ('activity_log', q => q.select('*').order('created_at',{ascending:false}).limit(200)); }
+async function loadAnnouncements(){ return dbQ('announcements', q => q.select('*').order('created_at',{ascending:false})); }
 
 function availQty(item, cos) { return Math.max(0, item.qty - cos.filter(t=>t.item_id===item.id).reduce((s,t)=>s+t.qty,0)); }
 function iStatus(item, cos, res) {
@@ -463,8 +587,10 @@ function badgeHtml(s) {
 }
 
 async function refresh() {
-  [_items,_checkouts,_reservations,_log] = await Promise.all([loadItems(),loadCheckouts(),loadReservations(),loadLog()]);
-  renderStats(); renderBrowse(); populateSelects(); populateCatDropdown(); renderCoActive(); renderResActive(); renderReturnList(); renderManage(); renderLog();
+  [_items,_checkouts,_reservations,_log,_users] = await Promise.all([loadItems(),loadCheckouts(),loadReservations(),loadLog(),loadUsers()]);
+  renderStats(); renderBrowse(); populateSelects(); populateCatDropdown();
+  renderCoActive(); renderResActive(); renderReturnList(); renderManage(); renderUsers(); renderLog();
+  updateReserveForField();
 }
 
 // ── Render ────────────────────────────────────────────────────────
@@ -484,7 +610,7 @@ function renderBrowse() {
   const fcat=document.getElementById('fcat'); const prev=fcat.value;
   fcat.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option value="${c}"${c===prev?' selected':''}>${c}</option>`).join('');
   let list=_items.filter(i=>{
-    const m=!q||i.name.toLowerCase().includes(q)||(i.location||'').toLowerCase().includes(q)||(i.category||'').toLowerCase().includes(q)||(i.sku||'').toLowerCase().includes(q);
+    const m=!q||i.name.toLowerCase().includes(q)||(i.location||'').toLowerCase().includes(q)||(i.category||'').toLowerCase().includes(q);
     const s=iStatus(i,_checkouts,_reservations);
     return m&&(!fc||i.category===fc)&&(!fs||s===fs);
   });
@@ -506,7 +632,17 @@ function populateSelects() {
   const opts=_items.map(i=>`<option value="${i.id}">${i.name} — ${i.location||'?'} (${availQty(i,_checkouts)} avail)</option>`).join('');
   document.getElementById('co-item').innerHTML=opts||'<option>No items</option>';
   document.getElementById('res-item').innerHTML=opts||'<option>No items</option>';
-  document.getElementById('co-person').value=session.name||'';
+}
+
+function populateCatDropdown() {
+  const cats=[...new Set(_items.map(i=>i.category).filter(Boolean))].sort();
+  const sel=document.getElementById('m-cat'); const prev=sel.value;
+  sel.innerHTML='<option value="">— select —</option>'+cats.map(c=>`<option value="${c}"${c===prev?' selected':''}>${c}</option>`).join('')+'<option value="__new__">+ Add new category…</option>';
+}
+function handleCatSelect() {
+  const sel=document.getElementById('m-cat'), ni=document.getElementById('m-cat-new');
+  if(sel.value==='__new__'){ni.style.display='block';ni.focus();}
+  else{ni.style.display='none';ni.value='';}
 }
 
 function renderCoActive() {
@@ -530,14 +666,11 @@ function renderResActive() {
     <th style="width:12%">Start</th><th style="width:12%">End</th><th style="width:16%">Note</th><th style="width:14%"></th>
   </tr></thead><tbody>`+
     _reservations.map(r=>{
-      const canCancel = session.role==='admin' || (session.role==='user' && session.name===r.person);
+      const canCancel=session.role==='admin'||(session.role==='user'&&session.name===r.person);
       return `<tr><td>${r.item_name}</td><td>${r.qty}</td><td>${r.person}</td>
         <td>${r.start_date||'—'}</td><td>${r.end_date||'—'}</td>
         <td style="color:var(--text2)">${r.note||'—'}</td>
-        <td>${canCancel
-          ? `<button class="btn-sm btn-sm-red" onclick="cancelRes('${r.id}')">Cancel</button>`
-          : `<span style="font-size:11px;color:var(--text3)">Not yours</span>`}
-        </td></tr>`;
+        <td>${canCancel?`<button class="btn-sm btn-sm-red" onclick="cancelRes('${r.id}')">Cancel</button>`:'<span style="font-size:11px;color:var(--text3)">Not yours</span>'}</td></tr>`;
     }).join('')+
   '</tbody></table>';
 }
@@ -550,13 +683,10 @@ function renderReturnList() {
     <th style="width:14%">Date out</th><th style="width:14%">Due back</th><th style="width:20%"></th>
   </tr></thead><tbody>`+
     _checkouts.map(t=>{
-      const canReturn = session.role==='admin' || (session.role==='user' && session.name===t.person);
+      const canReturn=session.role==='admin'||(session.role==='user'&&session.name===t.person);
       return `<tr><td>${t.item_name}</td><td>${t.qty}</td><td>${t.person}</td>
         <td>${t.created_at?.slice(0,10)||''}</td><td>${t.due_back||'—'}</td>
-        <td>${canReturn
-          ? `<button class="btn-sm btn-sm-teal" onclick="openReturnModal('${t.id}')">Return</button>`
-          : `<span style="font-size:11px;color:var(--text3)">Not yours</span>`}
-        </td></tr>`;
+        <td>${canReturn?`<button class="btn-sm btn-sm-teal" onclick="openReturnModal('${t.id}')">Return</button>`:'<span style="font-size:11px;color:var(--text3)">Not yours</span>'}</td></tr>`;
     }).join('')+
   '</tbody></table>';
 }
@@ -565,8 +695,7 @@ function renderManage() {
   const el=document.getElementById('manage-body');
   if(!_items.length){el.innerHTML='<tr><td colspan="6" class="empty">No items</td></tr>';return;}
   el.innerHTML=_items.map(item=>`<tr>
-    <td><span style="font-weight:500">${item.name}</span><br>
-        <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">${item.sku||'—'}</span></td>
+    <td><span style="font-weight:500">${item.name}</span></td>
     <td><span class="loc-tag">${item.location||'—'}</span></td>
     <td style="color:var(--text2)">${item.category||'—'}</td>
     <td>${item.qty}</td>
@@ -574,7 +703,21 @@ function renderManage() {
     <td style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn-sm btn-sm-teal" onclick="adjustQty('${item.id}',1)">+1</button>
       <button class="btn-sm btn-sm-teal" onclick="adjustQty('${item.id}',-1)">−1</button>
-      <button class="btn-sm btn-sm-red"  onclick="removeItem('${item.id}','${item.name.replace(/'/g,"\\'")}')">Remove</button>
+      <button class="btn-sm btn-sm-red" onclick="removeItem('${item.id}','${item.name.replace(/'/g,"\\'")}')">Remove</button>
+    </td></tr>`).join('');
+}
+
+function renderUsers() {
+  document.getElementById('default-pin-display').textContent = DEFAULT_PIN;
+  const el=document.getElementById('users-body');
+  if(!_users.length){el.innerHTML='<tr><td colspan="4" class="empty">No users yet</td></tr>';return;}
+  el.innerHTML=_users.map(u=>`<tr>
+    <td style="font-weight:500">${u.name}${u.id===session.id?' <span style="font-size:11px;color:var(--text3)">(you)</span>':''}</td>
+    <td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.role}</span></td>
+    <td style="font-family:var(--mono);font-size:12px;color:var(--text2)">${u.pin}</td>
+    <td style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn-sm btn-sm-amber" onclick="resetPin('${u.id}')">Reset PIN</button>
+      <button class="btn-sm btn-sm-red" onclick="deleteUser('${u.id}','${u.name.replace(/'/g,"\\'")}')">Remove</button>
     </td></tr>`).join('');
 }
 
@@ -594,11 +737,24 @@ function renderLog() {
     </div></div>`).join('');
 }
 
-// ── Item action modal ─────────────────────────────────────────────
-let _activeItemId=null, _activeImTab='co';
+async function renderAnnouncements() {
+  _announcements = await loadAnnouncements();
+  const bar=document.getElementById('announce-bar');
+  if(!_announcements.length||!session.role){bar.innerHTML='';bar.style.display='none';return;}
+  bar.style.display='block';
+  bar.innerHTML=_announcements.map(a=>`
+    <div class="announce-item">
+      <div class="announce-dot"></div>
+      <div class="announce-msg">${a.message}</div>
+      <div class="announce-meta">${a.created_by?'Posted by '+a.created_by:''} &nbsp; ${new Date(a.created_at).toLocaleDateString()}</div>
+      ${session.role==='admin'?`<button class="announce-del" onclick="deleteAnnouncement('${a.id}')" title="Delete">×</button>`:''}
+    </div>`).join('');
+}
 
+// ── Item modal ────────────────────────────────────────────────────
+let _activeItemId=null, _activeImTab='co';
 function openItemModal(itemId) {
-  if(!session.role){ openLogin(()=>openItemModal(itemId)); return; }
+  if(!session.role){openLogin(()=>openItemModal(itemId));return;}
   _activeItemId=itemId;
   const item=_items.find(i=>i.id===itemId); if(!item) return;
   const s=iStatus(item,_checkouts,_reservations), av=availQty(item,_checkouts);
@@ -612,14 +768,15 @@ function openItemModal(itemId) {
   document.getElementById('im-res-qty').value=1;
   document.getElementById('im-res-start').value=new Date().toISOString().slice(0,10);
   document.getElementById('im-res-end').value=''; document.getElementById('im-res-note').value='';
-  // admin assign field
   const wrap=document.getElementById('im-res-for-wrap');
   wrap.style.display=session.role==='admin'?'block':'none';
-  document.getElementById('im-res-for').value='';
+  if(session.role==='admin'){
+    document.getElementById('im-res-for-select').innerHTML=_users.map(u=>`<option value="${u.name}">${u.name}</option>`).join('');
+  }
   switchImTab('co');
   document.getElementById('item-modal').classList.add('open');
 }
-function closeItemModal(){ document.getElementById('item-modal').classList.remove('open'); _activeItemId=null; }
+function closeItemModal(){document.getElementById('item-modal').classList.remove('open');_activeItemId=null;}
 function switchImTab(tab){
   _activeImTab=tab;
   document.getElementById('imt-co').classList.toggle('on',tab==='co');
@@ -646,10 +803,7 @@ async function submitItemModal(){
     const start=document.getElementById('im-res-start').value;
     const end=document.getElementById('im-res-end').value;
     const note=document.getElementById('im-res-note').value.trim();
-    // admin can assign to another person; users always get themselves
-    const forPerson = session.role==='admin'
-      ? (document.getElementById('im-res-for').value.trim()||session.name)
-      : session.name;
+    const forPerson=session.role==='admin'?(document.getElementById('im-res-for-select').value||session.name):session.name;
     if(!start){toast('Enter a start date');return;}
     const{error}=await sb.from('reservations').insert({item_id:item.id,item_name:item.name,qty,person:forPerson,start_date:start,end_date:end||null,note:note||null,status:'active'});
     if(error){toast('Error: '+error.message);return;}
@@ -663,14 +817,13 @@ document.getElementById('item-modal').addEventListener('click',function(e){if(e.
 let _returnTxId=null;
 function openReturnModal(txId){
   const tx=_checkouts.find(t=>t.id===txId); if(!tx) return;
-  if(session.role!=='admin' && session.name!==tx.person){toast('You can only return items you checked out');return;}
+  if(session.role!=='admin'&&session.name!==tx.person){toast('You can only return your own items');return;}
   _returnTxId=txId;
   document.getElementById('return-modal-sub').textContent=`Returning: ${tx.item_name} ×${tx.qty} (checked out by ${tx.person})`;
-  document.getElementById('ret-note').value='';
-  document.getElementById('return-err').textContent='';
+  document.getElementById('ret-note').value=''; document.getElementById('return-err').textContent='';
   document.getElementById('return-modal').classList.add('open');
 }
-function closeReturnModal(){ document.getElementById('return-modal').classList.remove('open'); _returnTxId=null; }
+function closeReturnModal(){document.getElementById('return-modal').classList.remove('open');_returnTxId=null;}
 async function confirmReturn(){
   const tx=_checkouts.find(t=>t.id===_returnTxId); if(!tx) return;
   const note=document.getElementById('ret-note').value.trim();
@@ -681,7 +834,7 @@ async function confirmReturn(){
 }
 document.getElementById('return-modal').addEventListener('click',function(e){if(e.target===this)closeReturnModal();});
 
-// ── Tab actions ───────────────────────────────────────────────────
+// ── Actions ───────────────────────────────────────────────────────
 async function doCheckout(){
   if(!session.role){openLogin();return;}
   const itemId=document.getElementById('co-item').value;
@@ -701,7 +854,7 @@ async function doReserve(){
   if(!session.role){openLogin();return;}
   const itemId=document.getElementById('res-item').value;
   const qty=parseInt(document.getElementById('res-qty').value)||1;
-  const forPerson=document.getElementById('res-person').value.trim()||session.name;
+  const forPerson=session.role==='admin'?(document.getElementById('res-person-select').value||session.name):session.name;
   const start=document.getElementById('res-start').value;
   const end=document.getElementById('res-end').value;
   const note=document.getElementById('res-note').value.trim();
@@ -716,44 +869,23 @@ async function doReserve(){
 
 async function cancelRes(resId){
   const res=_reservations.find(r=>r.id===resId);
-  if(!res){toast('Reservation not found');return;}
-  if(session.role!=='admin' && session.name!==res.person){toast('You can only cancel your own reservations');return;}
+  if(!res){toast('Not found');return;}
+  if(session.role!=='admin'&&session.name!==res.person){toast('You can only cancel your own reservations');return;}
   const{error}=await sb.from('reservations').update({status:'cancelled'}).eq('id',resId);
   if(error){toast('Error: '+error.message);return;}
   await refresh(); toast('Reservation cancelled');
-}
-
-// ── Category dropdown ─────────────────────────────────────────────
-function populateCatDropdown() {
-  const cats = [...new Set(_items.map(i => i.category).filter(Boolean))].sort();
-  const sel = document.getElementById('m-cat');
-  const prev = sel.value;
-  sel.innerHTML = '<option value="">— select —</option>' +
-    cats.map(c => `<option value="${c}"${c===prev?' selected':''}>${c}</option>`).join('') +
-    '<option value="__new__">+ Add new category…</option>';
-}
-function handleCatSelect() {
-  const sel = document.getElementById('m-cat');
-  const newInput = document.getElementById('m-cat-new');
-  if (sel.value === '__new__') {
-    newInput.style.display = 'block';
-    newInput.focus();
-  } else {
-    newInput.style.display = 'none';
-    newInput.value = '';
-  }
 }
 
 async function addItem(){
   if(session.role!=='admin') return;
   const name=document.getElementById('m-name').value.trim();
   if(!name){toast('Name required');return;}
-  const catSel = document.getElementById('m-cat').value;
-  const catNew = document.getElementById('m-cat-new').value.trim();
-  const category = catSel === '__new__' ? (catNew || 'General') : (catSel || 'General');
-  const{error}=await sb.from('items').insert({name,category,location:document.getElementById('m-loc').value.trim()||'Unknown',qty:parseInt(document.getElementById('m-qty').value)||0,sku:document.getElementById('m-sku').value.trim()||null,notes:document.getElementById('m-notes').value.trim()||null});
+  const catSel=document.getElementById('m-cat').value;
+  const catNew=document.getElementById('m-cat-new').value.trim();
+  const category=catSel==='__new__'?(catNew||'General'):(catSel||'General');
+  const{error}=await sb.from('items').insert({name,category,location:document.getElementById('m-loc').value.trim()||'Unknown',qty:parseInt(document.getElementById('m-qty').value)||0,notes:document.getElementById('m-notes').value.trim()||null});
   if(error){toast('Error: '+error.message);return;}
-  ['m-name','m-loc','m-sku','m-notes'].forEach(id=>document.getElementById(id).value='');
+  ['m-name','m-loc','m-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('m-qty').value=1;
   document.getElementById('m-cat').value='';
   document.getElementById('m-cat-new').value='';
@@ -775,9 +907,96 @@ async function removeItem(id,name){
   await refresh(); toast(`"${name}" removed`);
 }
 
+// ── User management ───────────────────────────────────────────────
+async function addUser(){
+  if(session.role!=='admin') return;
+  const name=document.getElementById('u-name').value.trim();
+  const role=document.getElementById('u-role').value;
+  if(!name){toast('Name required');return;}
+  const{error}=await sb.from('users').insert({name,role,pin:DEFAULT_PIN});
+  if(error){toast('Error: '+error.message);return;}
+  document.getElementById('u-name').value='';
+  document.getElementById('u-role').value='user';
+  await refresh(); toast(`"${name}" added with default PIN`);
+}
+
+async function resetPin(uid){
+  if(session.role!=='admin') return;
+  const{error}=await sb.from('users').update({pin:DEFAULT_PIN}).eq('id',uid);
+  if(error){toast('Error: '+error.message);return;}
+  await refresh(); toast('PIN reset to default');
+}
+
+async function deleteUser(uid,name){
+  if(session.role!=='admin') return;
+  if(uid===session.id){toast("You can't delete your own account");return;}
+  if(!confirm(`Remove user "${name}"?`)) return;
+  await sb.from('users').delete().eq('id',uid);
+  await refresh(); toast(`"${name}" removed`);
+}
+
+// ── Announcements ─────────────────────────────────────────────────
+async function postAnnouncement(){
+  if(session.role!=='admin') return;
+  const msg=document.getElementById('announce-input').value.trim();
+  if(!msg) return;
+  const{error}=await sb.from('announcements').insert({message:msg,created_by:session.name});
+  if(error){toast('Error: '+error.message);return;}
+  document.getElementById('announce-input').value='';
+  await renderAnnouncements(); toast('Announcement posted');
+}
+async function deleteAnnouncement(id){
+  if(session.role!=='admin') return;
+  await sb.from('announcements').delete().eq('id',id);
+  await renderAnnouncements();
+}
+
+// ── Excel import ──────────────────────────────────────────────────
+async function importFromExcel(event){
+  if(session.role!=='admin') return;
+  const file=event.target.files[0]; if(!file) return;
+  const status=document.getElementById('import-status');
+  status.textContent='Reading file…';
+  try{
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+    if(!rows.length){status.textContent='No rows found.';return;}
+    const normalize=str=>String(str).toLowerCase().replace(/[^a-z]/g,'');
+    const colMap={};
+    const fieldAliases={name:['name'],category:['category'],location:['locationbin','location','bin'],qty:['qtyonhand','qty','quantity'],notes:['notes']};
+    for(const key of Object.keys(rows[0])){
+      const n=normalize(key);
+      for(const[field,aliases]of Object.entries(fieldAliases)){
+        if(aliases.some(a=>n.includes(a))){colMap[field]=key;break;}
+      }
+    }
+    if(!colMap.name){status.textContent='Could not find a "Name" column.';return;}
+    const toInsert=rows.filter(r=>String(r[colMap.name]||'').trim()).map(r=>({
+      name:String(r[colMap.name]||'').trim(),
+      category:String(r[colMap.category]||'General').trim()||'General',
+      location:String(r[colMap.location]||'Unknown').trim()||'Unknown',
+      qty:parseInt(r[colMap.qty])||0,
+      notes:String(r[colMap.notes]||'').trim()||null,
+    }));
+    if(!toInsert.length){status.textContent='No valid rows to import.';return;}
+    status.textContent=`Importing ${toInsert.length} items…`;
+    let inserted=0;
+    for(let i=0;i<toInsert.length;i+=50){
+      const{error}=await sb.from('items').insert(toInsert.slice(i,i+50));
+      if(error){status.textContent='Error: '+error.message;return;}
+      inserted+=toInsert.slice(i,i+50).length;
+    }
+    status.textContent=`✓ Imported ${inserted} items successfully.`;
+    event.target.value='';
+    await refresh();
+  }catch(e){status.textContent='Error: '+e.message;}
+}
+
 // ── Nav ───────────────────────────────────────────────────────────
 function sw(name){
-  const names=['browse','checkout','reserve','checkin','manage','log'];
+  const names=['browse','checkout','reserve','checkin','manage','users','log'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',names[i]===name));
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
   document.getElementById('sec-'+name).classList.add('on');
@@ -789,116 +1008,15 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ── Announcements ─────────────────────────────────────────────────
-let _announcements = [];
-async function loadAnnouncements() {
-  return dbQ('announcements', q => q.select('*').order('created_at', {ascending: false}));
-}
-async function renderAnnouncements() {
-  _announcements = await loadAnnouncements();
-  const bar = document.getElementById('announce-bar');
-  if (!_announcements.length || !session.role) { bar.innerHTML = ''; bar.style.display = 'none'; return; }
-  bar.style.display = 'block';
-  bar.innerHTML = _announcements.map(a => `
-    <div class="announce-item">
-      <div class="announce-dot"></div>
-      <div class="announce-msg">${a.message}</div>
-      <div class="announce-meta">${a.created_by ? 'Posted by ' + a.created_by : ''} &nbsp; ${new Date(a.created_at).toLocaleDateString()}</div>
-      ${session.role === 'admin' ? `<button class="announce-del" onclick="deleteAnnouncement('${a.id}')" title="Delete">×</button>` : ''}
-    </div>`).join('');
-}
-async function postAnnouncement() {
-  if (session.role !== 'admin') return;
-  const msg = document.getElementById('announce-input').value.trim();
-  if (!msg) return;
-  const { error } = await sb.from('announcements').insert({ message: msg, created_by: session.name });
-  if (error) { toast('Error: ' + error.message); return; }
-  document.getElementById('announce-input').value = '';
-  await renderAnnouncements();
-  toast('Announcement posted');
-}
-async function deleteAnnouncement(id) {
-  if (session.role !== 'admin') return;
-  const { error } = await sb.from('announcements').delete().eq('id', id);
-  if (error) { toast('Error: ' + error.message); return; }
-  await renderAnnouncements();
-}
-
-// ── Excel import ──────────────────────────────────────────────────
-async function importFromExcel(event) {
-  if (session.role !== 'admin') return;
-  const file = event.target.files[0];
-  if (!file) return;
-  const status = document.getElementById('import-status');
-  status.textContent = 'Reading file…';
-  try {
-    const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf, { type: 'array' });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-    if (!rows.length) { status.textContent = 'No rows found in file.'; return; }
-
-    // Normalize headers: accept "Name *" or "name", "Category *" or "category" etc.
-    const normalize = str => String(str).toLowerCase().replace(/[^a-z]/g, '');
-    const colMap = {};
-    const fieldAliases = {
-      name:     ['name'],
-      category: ['category'],
-      location: ['locationbin','location','bin'],
-      qty:      ['qtyonhand','qty','quantity'],
-      sku:      ['skutag','sku','tag'],
-      notes:    ['notes'],
-    };
-    const sampleRow = rows[0];
-    for (const key of Object.keys(sampleRow)) {
-      const n = normalize(key);
-      for (const [field, aliases] of Object.entries(fieldAliases)) {
-        if (aliases.some(a => n.includes(a))) { colMap[field] = key; break; }
-      }
-    }
-    if (!colMap.name) { status.textContent = 'Could not find a "Name" column. Check your headers.'; return; }
-
-    const toInsert = rows
-      .filter(r => String(r[colMap.name]||'').trim())
-      .map(r => ({
-        name:     String(r[colMap.name]||'').trim(),
-        category: String(r[colMap.category]||'General').trim() || 'General',
-        location: String(r[colMap.location]||'Unknown').trim() || 'Unknown',
-        qty:      parseInt(r[colMap.qty]) || 0,
-        sku:      String(r[colMap.sku]||'').trim() || null,
-        notes:    String(r[colMap.notes]||'').trim() || null,
-      }));
-
-    if (!toInsert.length) { status.textContent = 'No valid rows to import.'; return; }
-    status.textContent = `Importing ${toInsert.length} items…`;
-
-    // Insert in batches of 50
-    let inserted = 0;
-    for (let i = 0; i < toInsert.length; i += 50) {
-      const batch = toInsert.slice(i, i + 50);
-      const { error } = await sb.from('items').insert(batch);
-      if (error) { status.textContent = `Error on batch: ${error.message}`; return; }
-      inserted += batch.length;
-    }
-    status.textContent = `✓ Imported ${inserted} items successfully.`;
-    event.target.value = '';
-    await refresh();
-  } catch(e) {
-    status.textContent = 'Error reading file: ' + e.message;
-  }
-}
-
 // ── Boot ──────────────────────────────────────────────────────────
-// Restore session from localStorage
-try {
-  const saved = localStorage.getItem('sc_session');
-  if (saved) session = JSON.parse(saved);
-} catch(e) {}
-updateNav(); refreshTabAccess(); updateReserveForField();
 document.getElementById('res-start').value=new Date().toISOString().slice(0,10);
-if(configured) { refresh(); renderAnnouncements(); }
-else { renderStats(); document.getElementById('browse-grid').innerHTML='<p class="empty">Configure Supabase to load items.</p>'; }
+updateNav(); refreshTabAccess();
+if(configured){
+  refresh().then(()=>{ updateNav(); refreshTabAccess(); });
+  renderAnnouncements();
+} else {
+  document.getElementById('browse-grid').innerHTML='<p class="empty">Configure Supabase credentials at the top of index.html.</p>';
+}
 </script>
-
 </body>
 </html>
