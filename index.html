@@ -22,7 +22,9 @@
   .nav-title{font-size:15px;font-weight:500;color:var(--text);flex:1;}
   .nav-user{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px;}
   .nav-badge{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;}
-  .badge-admin{background:#FAEEDA;color:#633806;}.badge-user{background:#E1F5EE;color:#085041;}
+  .badge-admin{background:#FAEEDA;color:#633806;}
+  .badge-sra{background:#E6F1FB;color:#0C447C;}
+  .badge-user{background:#E1F5EE;color:#085041;}
   .btn-link{background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:4px 8px;border-radius:var(--radius);}
   .btn-link:hover{background:var(--bg3);}
   .page{max-width:960px;margin:0 auto;padding:1.5rem 1rem;}
@@ -224,13 +226,13 @@
     <div class="panel">
       <div class="panel-title">Add item to closet</div>
       <div class="frow c3">
-        <div class="field"><label>Name</label><input type="text" id="m-name" placeholder="Item "></div>
+        <div class="field"><label>Name</label><input type="text" id="m-name" placeholder="Extension cord 25ft"></div>
         <div class="field">
           <label>Category</label>
           <select id="m-cat" onchange="handleCatSelect()"><option value="">— select —</option></select>
           <input type="text" id="m-cat-new" placeholder="New category name…" style="display:none;margin-top:6px">
         </div>
-        <div class="field"><label>Location / bin</label><input type="text" id="m-loc" placeholder="Left Closet"></div>
+        <div class="field"><label>Location / bin</label><input type="text" id="m-loc" placeholder="Shelf A3"></div>
       </div>
       <div class="frow">
         <div class="field"><label>Qty on hand</label><input type="number" id="m-qty" value="1" min="0"></div>
@@ -266,8 +268,9 @@
         <div class="field">
           <label>Role</label>
           <select id="u-role">
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
+            <option value="ra">RA</option>
+            <option value="sra">SRA</option>
+            <option value="rhd">RHD</option>
           </select>
         </div>
         <div class="field" style="justify-content:flex-end">
@@ -430,13 +433,30 @@ async function loadUsers() {
   return data || [];
 }
 
+// ── Role helpers ──────────────────────────────────────────────────
+function isAdmin()    { return session.role==='admin' || session.role==='rhd'; }
+function isSRA()      { return session.role==='sra'; }
+function isRA()       { return session.role==='ra'; }
+function isAnyStaff() { return isAdmin() || isSRA(); }
+function isLoggedIn() { return !!session.role; }
+function roleBadgeClass(role) {
+  if (role==='admin'||role==='rhd') return 'badge-admin';
+  if (role==='sra') return 'badge-sra';
+  return 'badge-user';
+}
+function roleLabel(role) {
+  if (role==='admin'||role==='rhd') return 'RHD';
+  if (role==='sra') return 'SRA';
+  return 'RA';
+}
+
 function openLogin(onSuccess) {
   _loginCallback = onSuccess || null;
   document.getElementById('login-err').textContent = '';
   document.getElementById('login-pin').value = '';
   const sel = document.getElementById('login-name');
   sel.innerHTML = '<option value="">— select your name —</option>' +
-    _users.map(u => `<option value="${u.id}">${u.name}${u.role==='admin'?' (admin)':''}</option>`).join('');
+    _users.map(u => `<option value="${u.id}">${u.name} (${roleLabel(u.role)})</option>`).join('');
   if (session.id) sel.value = session.id;
   document.getElementById('login-modal').classList.add('open');
   setTimeout(() => document.getElementById('login-pin').focus(), 80);
@@ -477,7 +497,7 @@ function signOut() {
 
 function updateNav() {
   document.getElementById('nav-name').innerHTML = session.role
-    ? `${session.name} <span class="nav-badge badge-${session.role==='admin'?'admin':'user'}">${session.role}</span>`
+    ? `${session.name} <span class="nav-badge ${roleBadgeClass(session.role)}">${roleLabel(session.role)}</span>`
     : 'Not signed in';
   const btn = document.getElementById('nav-btn');
   if (session.role) {
@@ -512,22 +532,23 @@ function updateNav() {
 }
 
 function refreshTabAccess() {
-  const u = !!session.role, a = session.role === 'admin';
+  const u = isLoggedIn(), a = isAdmin(), staff = isAnyStaff();
   ['tab-checkout','tab-reserve','tab-checkin'].forEach(id => document.getElementById(id).disabled = !u);
-  document.getElementById('tab-manage').style.display = a ? '' : 'none';
+  document.getElementById('tab-manage').style.display = staff ? '' : 'none';
   document.getElementById('tab-users').style.display  = a ? '' : 'none';
-  document.getElementById('tab-log').style.display    = a ? '' : 'none';
-  document.getElementById('admin-post-bar').classList.toggle('show', a);
-  if (!a && ['sec-manage','sec-users','sec-log'].some(id => document.getElementById(id).classList.contains('on'))) sw('browse');
+  document.getElementById('tab-log').style.display    = staff ? '' : 'none';
+  document.getElementById('admin-post-bar').classList.toggle('show', staff);
+  if (!staff && ['sec-manage','sec-log'].some(id => document.getElementById(id).classList.contains('on'))) sw('browse');
+  if (!a && document.getElementById('sec-users').classList.contains('on')) sw('browse');
   renderAnnouncements();
 }
 
 function updateReserveForField() {
-  const isAdmin = session.role === 'admin';
-  document.getElementById('res-for-label').textContent = isAdmin ? '(assign to anyone)' : '(you)';
+  const admin = isAdmin(), staff = isAnyStaff();
+  document.getElementById('res-for-label').textContent = admin ? '(assign to anyone)' : '(you)';
   const sel = document.getElementById('res-person-select');
   const inp = document.getElementById('res-person-input');
-  if (isAdmin) {
+  if (admin) {
     sel.style.display = ''; inp.style.display = 'none';
     sel.innerHTML = _users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
   } else {
@@ -536,7 +557,7 @@ function updateReserveForField() {
   }
   const wrap = document.getElementById('im-res-for-wrap');
   if (wrap) {
-    wrap.style.display = isAdmin ? 'block' : 'none';
+    wrap.style.display = admin ? 'block' : 'none';
     const imSel = document.getElementById('im-res-for-select');
     if (imSel) imSel.innerHTML = _users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
   }
@@ -713,7 +734,7 @@ function renderUsers() {
   if(!_users.length){el.innerHTML='<tr><td colspan="4" class="empty">No users yet</td></tr>';return;}
   el.innerHTML=_users.map(u=>`<tr>
     <td style="font-weight:500">${u.name}${u.id===session.id?' <span style="font-size:11px;color:var(--text3)">(you)</span>':''}</td>
-    <td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.role}</span></td>
+    <td><span class="badge ${roleBadgeClass(u.role)}">${roleLabel(u.role)}</span></td>
     <td style="font-family:var(--mono);font-size:12px;color:var(--text2)">${u.pin}</td>
     <td style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn-sm btn-sm-amber" onclick="resetPin('${u.id}')">Reset PIN</button>
@@ -747,7 +768,7 @@ async function renderAnnouncements() {
       <div class="announce-dot"></div>
       <div class="announce-msg">${a.message}</div>
       <div class="announce-meta">${a.created_by?'Posted by '+a.created_by:''} &nbsp; ${new Date(a.created_at).toLocaleDateString()}</div>
-      ${session.role==='admin'?`<button class="announce-del" onclick="deleteAnnouncement('${a.id}')" title="Delete">×</button>`:''}
+      ${isAnyStaff()?`<button class="announce-del" onclick="deleteAnnouncement('${a.id}')" title="Delete">×</button>`:''}
     </div>`).join('');
 }
 
@@ -877,7 +898,7 @@ async function cancelRes(resId){
 }
 
 async function addItem(){
-  if(session.role!=='admin') return;
+  if(!isAnyStaff()) return;
   const name=document.getElementById('m-name').value.trim();
   if(!name){toast('Name required');return;}
   const catSel=document.getElementById('m-cat').value;
@@ -894,14 +915,14 @@ async function addItem(){
 }
 
 async function adjustQty(id,delta){
-  if(session.role!=='admin') return;
+  if(!isAnyStaff()) return;
   const item=_items.find(i=>i.id===id); if(!item) return;
   await sb.from('items').update({qty:Math.max(0,item.qty+delta)}).eq('id',id);
   await refresh();
 }
 
 async function removeItem(id,name){
-  if(session.role!=='admin') return;
+  if(!isAnyStaff()) return;
   if(!confirm(`Remove "${name}"?`)) return;
   await sb.from('items').delete().eq('id',id);
   await refresh(); toast(`"${name}" removed`);
@@ -909,7 +930,7 @@ async function removeItem(id,name){
 
 // ── User management ───────────────────────────────────────────────
 async function addUser(){
-  if(session.role!=='admin') return;
+  if(!isAdmin()) return;
   const name=document.getElementById('u-name').value.trim();
   const role=document.getElementById('u-role').value;
   if(!name){toast('Name required');return;}
@@ -921,14 +942,14 @@ async function addUser(){
 }
 
 async function resetPin(uid){
-  if(session.role!=='admin') return;
+  if(!isAdmin()) return;
   const{error}=await sb.from('users').update({pin:DEFAULT_PIN}).eq('id',uid);
   if(error){toast('Error: '+error.message);return;}
   await refresh(); toast('PIN reset to default');
 }
 
 async function deleteUser(uid,name){
-  if(session.role!=='admin') return;
+  if(!isAdmin()) return;
   if(uid===session.id){toast("You can't delete your own account");return;}
   if(!confirm(`Remove user "${name}"?`)) return;
   await sb.from('users').delete().eq('id',uid);
@@ -937,7 +958,7 @@ async function deleteUser(uid,name){
 
 // ── Announcements ─────────────────────────────────────────────────
 async function postAnnouncement(){
-  if(session.role!=='admin') return;
+  if(!isAnyStaff()) return;
   const msg=document.getElementById('announce-input').value.trim();
   if(!msg) return;
   const{error}=await sb.from('announcements').insert({message:msg,created_by:session.name});
@@ -946,14 +967,14 @@ async function postAnnouncement(){
   await renderAnnouncements(); toast('Announcement posted');
 }
 async function deleteAnnouncement(id){
-  if(session.role!=='admin') return;
+  if(!isAnyStaff()) return;
   await sb.from('announcements').delete().eq('id',id);
   await renderAnnouncements();
 }
 
 // ── Excel import ──────────────────────────────────────────────────
 async function importFromExcel(event){
-  if(session.role!=='admin') return;
+  if(!isAnyStaff()) return;
   const file=event.target.files[0]; if(!file) return;
   const status=document.getElementById('import-status');
   status.textContent='Reading file…';
