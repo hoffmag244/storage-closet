@@ -797,7 +797,7 @@ async function loadAnnouncements() {
 async function renderAnnouncements() {
   _announcements = await loadAnnouncements();
   const bar = document.getElementById('announce-bar');
-  if (!_announcements.length) { bar.innerHTML = ''; bar.style.display = 'none'; return; }
+  if (!_announcements.length || !session.role) { bar.innerHTML = ''; bar.style.display = 'none'; return; }
   bar.style.display = 'block';
   bar.innerHTML = _announcements.map(a => `
     <div class="announce-item">
