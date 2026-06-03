@@ -120,7 +120,7 @@
 <body>
 
 <script>
- // ── CONFIG ──
+  // ── CONFIG ──
   const SUPABASE_URL      = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
   const DEFAULT_PIN       = '0000';  // Every new user starts with this PIN
@@ -467,7 +467,7 @@ function roleLabel(role) {
 }
 
 function openLogin(onSuccess) {
-  _loginCallback = onSuccess || null;
+  _loginCallback = (typeof onSuccess === 'function') ? onSuccess : null;
   document.getElementById('login-err').textContent = '';
   document.getElementById('login-pin').value = '';
   document.getElementById('login-name').value = session.name || '';
@@ -523,7 +523,7 @@ async function submitLogin() {
   refreshTabAccess();
   updateReserveForField();
   toast(`Signed in as ${user.name}`);
-  if (_loginCallback) { _loginCallback(); _loginCallback = null; }
+  if (typeof _loginCallback === 'function') { _loginCallback(); _loginCallback = null; }
 }
 
 function signOut() {
