@@ -120,7 +120,7 @@
 <body>
 
 <script>
-  // ── CONFIG ──
+ // ── CONFIG ──
   const SUPABASE_URL      = 'https://surpbqcrfyrlgrdewqkd.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_sFIBPsAsqzsJqXBz2MD6bg_5jyAGYyh';
   const DEFAULT_PIN       = '0000';  // Every new user starts with this PIN
@@ -139,6 +139,7 @@
 <div id="announce-bar" class="announce-bar"></div>
 <div class="admin-post-bar" id="admin-post-bar">
   <input type="text" id="announce-input" placeholder="Type an announcement…" maxlength="200" onkeydown="if(event.key==='Enter')postAnnouncement()">
+  <input type="date" id="announce-expires" title="Expiry date (optional)" style="width:150px;flex:none;">
   <button class="btn btn-blue" onclick="postAnnouncement()">Post</button>
 </div>
 
@@ -629,7 +630,10 @@ async function loadItems()        { return dbQ('items', q => q.select('*').order
 async function loadCheckouts()    { return dbQ('checkouts', q => q.select('*').eq('status','out').order('created_at',{ascending:false})); }
 async function loadReservations() { return dbQ('reservations', q => q.select('*').eq('status','active').order('start_date')); }
 async function loadLog()          { return dbQ('activity_log', q => q.select('*').order('created_at',{ascending:false}).limit(200)); }
-async function loadAnnouncements(){ return dbQ('announcements', q => q.select('*').order('created_at',{ascending:false})); }
+async function loadAnnouncements(){
+  const today = new Date().toISOString().slice(0,10);
+  return dbQ('announcements', q => q.select('*').or(`expires_at.is.null,expires_at.gte.${today}`).order('created_at',{ascending:false}));
+}
 
 function availQty(item, cos) { return Math.max(0, item.qty - cos.filter(t=>t.item_id===item.id).reduce((s,t)=>s+t.qty,0)); }
 function iStatus(item, cos, res) {
@@ -826,7 +830,11 @@ async function renderAnnouncements() {
     <div class="announce-item">
       <div class="announce-dot"></div>
       <div class="announce-msg">${a.message}</div>
-      <div class="announce-meta">${a.created_by?'Posted by '+a.created_by:''} &nbsp; ${new Date(a.created_at).toLocaleDateString()}</div>
+      <div class="announce-meta">
+        ${a.created_by?'Posted by '+a.created_by:''}
+        ${a.expires_at?` · Expires ${a.expires_at}`:''}
+        &nbsp; ${new Date(a.created_at).toLocaleDateString()}
+      </div>
       ${isAnyStaff()?`<button class="announce-del" onclick="deleteAnnouncement('${a.id}')" title="Delete">×</button>`:''}
     </div>`).join('');
 }
@@ -1075,10 +1083,12 @@ async function deleteUser(uid,name){
 async function postAnnouncement(){
   if(!isAnyStaff()) return;
   const msg=document.getElementById('announce-input').value.trim();
+  const expires=document.getElementById('announce-expires').value||null;
   if(!msg) return;
-  const{error}=await sb.from('announcements').insert({message:msg,created_by:session.name});
+  const{error}=await sb.from('announcements').insert({message:msg,created_by:session.name,expires_at:expires});
   if(error){toast('Error: '+error.message);return;}
   document.getElementById('announce-input').value='';
+  document.getElementById('announce-expires').value='';
   await renderAnnouncements(); toast('Announcement posted');
 }
 async function deleteAnnouncement(id){
