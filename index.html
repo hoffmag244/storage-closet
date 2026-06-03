@@ -103,6 +103,17 @@
   #toast.show{opacity:1;}
   .config-banner{background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:var(--radius);padding:12px 16px;font-size:13px;color:#633806;margin-bottom:1.25rem;}
   .config-banner code{font-family:var(--mono);background:rgba(0,0,0,0.08);padding:1px 5px;border-radius:4px;font-size:12px;}
+  .announce-bar{background:#E6F1FB;border-bottom:0.5px solid #85B7EB;}
+  .announce-item{display:flex;align-items:center;gap:10px;padding:8px 1.5rem;border-bottom:0.5px solid #B5D4F4;}
+  .announce-item:last-child{border-bottom:none;}
+  .announce-dot{width:6px;height:6px;border-radius:50%;background:#185FA5;flex-shrink:0;}
+  .announce-msg{flex:1;font-size:13px;color:#0C447C;font-weight:500;}
+  .announce-meta{font-size:11px;color:#378ADD;white-space:nowrap;}
+  .announce-del{background:none;border:none;color:#378ADD;cursor:pointer;font-size:18px;padding:0 2px;line-height:1;opacity:0.7;}
+  .announce-del:hover{opacity:1;}
+  .admin-post-bar{background:var(--bg);border-bottom:0.5px solid var(--border);padding:8px 1.5rem;display:none;align-items:center;gap:8px;}
+  .admin-post-bar.show{display:flex;}
+  .admin-post-bar input{flex:1;max-width:520px;}
   @media(max-width:600px){.frow.c3,.frow.c4{grid-template-columns:1fr 1fr;} .stats{grid-template-columns:1fr 1fr 1fr;}}
 </style>
 </head>
@@ -124,6 +135,14 @@
     <button class="btn-link" id="nav-btn" onclick="openLogin()">Sign in</button>
   </div>
 </nav>
+
+<!-- announcements -->
+<div id="announce-bar" class="announce-bar"></div>
+<!-- admin post bar -->
+<div class="admin-post-bar" id="admin-post-bar">
+  <input type="text" id="announce-input" placeholder="Type an announcement…" maxlength="200" onkeydown="if(event.key==='Enter')postAnnouncement()">
+  <button class="btn btn-blue" onclick="postAnnouncement()">Post</button>
+</div>
 
 <div class="page">
   <div id="config-banner" class="config-banner" style="display:none">
@@ -384,6 +403,8 @@ function refreshTabAccess() {
   const u = !!session.role, a = session.role === 'admin';
   ['tab-checkout','tab-reserve','tab-checkin'].forEach(id => document.getElementById(id).disabled = !u);
   document.getElementById('tab-manage').disabled = !a;
+  document.getElementById('admin-post-bar').classList.toggle('show', a);
+  renderAnnouncements();
 }
 function updateReserveForField() {
   // admin sees "reserve for" field; regular users get their own name auto-filled
@@ -715,39 +736,47 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('show'),2800);
 }
 
+// ── Announcements ─────────────────────────────────────────────────
+let _announcements = [];
+async function loadAnnouncements() {
+  return dbQ('announcements', q => q.select('*').order('created_at', {ascending: false}));
+}
+async function renderAnnouncements() {
+  _announcements = await loadAnnouncements();
+  const bar = document.getElementById('announce-bar');
+  if (!_announcements.length) { bar.innerHTML = ''; bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  bar.innerHTML = _announcements.map(a => `
+    <div class="announce-item">
+      <div class="announce-dot"></div>
+      <div class="announce-msg">${a.message}</div>
+      <div class="announce-meta">${a.created_by ? 'Posted by ' + a.created_by : ''} &nbsp; ${new Date(a.created_at).toLocaleDateString()}</div>
+      ${session.role === 'admin' ? `<button class="announce-del" onclick="deleteAnnouncement('${a.id}')" title="Delete">×</button>` : ''}
+    </div>`).join('');
+}
+async function postAnnouncement() {
+  if (session.role !== 'admin') return;
+  const msg = document.getElementById('announce-input').value.trim();
+  if (!msg) return;
+  const { error } = await sb.from('announcements').insert({ message: msg, created_by: session.name });
+  if (error) { toast('Error: ' + error.message); return; }
+  document.getElementById('announce-input').value = '';
+  await renderAnnouncements();
+  toast('Announcement posted');
+}
+async function deleteAnnouncement(id) {
+  if (session.role !== 'admin') return;
+  const { error } = await sb.from('announcements').delete().eq('id', id);
+  if (error) { toast('Error: ' + error.message); return; }
+  await renderAnnouncements();
+}
+
 // ── Boot ──────────────────────────────────────────────────────────
 updateNav(); refreshTabAccess(); updateReserveForField();
 document.getElementById('res-start').value=new Date().toISOString().slice(0,10);
-if(configured) refresh();
+if(configured) { refresh(); renderAnnouncements(); }
 else { renderStats(); document.getElementById('browse-grid').innerHTML='<p class="empty">Configure Supabase to load items.</p>'; }
 </script>
 
-<div class="page" style="padding-top:0">
-  <details style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;font-size:13px;color:var(--text2)">
-    <summary style="cursor:pointer;font-weight:500;color:var(--text);font-size:14px">Setup guide — click to expand</summary>
-    <div style="margin-top:1rem;line-height:1.8">
-      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 1 — Create a Supabase project</strong><br>Go to <a href="https://supabase.com" target="_blank" style="color:#185FA5">supabase.com</a>, sign up free, and create a new project.</p>
-      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 2 — Run this SQL</strong><br>SQL Editor → New snippet → paste and run:</p>
-      <pre style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem;overflow-x:auto;font-size:12px;font-family:var(--mono);margin-bottom:.75rem">create extension if not exists "uuid-ossp";
-create table items (id uuid primary key default uuid_generate_v4(), name text not null, category text, location text, qty int default 1, sku text, notes text, created_at timestamptz default now());
-create table checkouts (id uuid primary key default uuid_generate_v4(), item_id uuid references items(id), item_name text, qty int default 1, person text, due_back date, note text, status text default 'out', created_at timestamptz default now());
-create table reservations (id uuid primary key default uuid_generate_v4(), item_id uuid references items(id), item_name text, qty int default 1, person text, start_date date, end_date date, note text, status text default 'active', created_at timestamptz default now());
-create table activity_log (id uuid primary key default uuid_generate_v4(), type text, item_id uuid, item_name text, qty int, person text, note text, created_at timestamptz default now());
-alter table items enable row level security;
-alter table checkouts enable row level security;
-alter table reservations enable row level security;
-alter table activity_log enable row level security;
-create policy "public all" on items for all using (true) with check (true);
-create policy "public all" on checkouts for all using (true) with check (true);
-create policy "public all" on reservations for all using (true) with check (true);
-create policy "public all" on activity_log for all using (true) with check (true);</pre>
-      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 3 — Add credentials</strong><br>Project URL and Publishable key → paste at top of index.html. Change the PINs.</p>
-      <p style="margin-bottom:.75rem"><strong style="color:var(--text)">Step 4 — GitHub Pages</strong><br>New repo → upload index.html → Settings → Pages → Deploy from branch → main → Save.</p>
-      <p><strong style="color:var(--text)">Default PINs (change these!)</strong><br>
-      User PIN: <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:4px">0000</code><br>
-      Admin PIN: <code style="font-family:var(--mono);background:var(--bg2);padding:1px 5px;border-radius:4px">1234</code></p>
-    </div>
-  </details>
-</div>
 </body>
 </html>
